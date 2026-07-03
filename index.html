@@ -16882,6 +16882,96 @@ window.CANNON=module.exports;})();
   };
 
   /* keys 按 t 排序（保险） */
+  /* ================= v1.7 A节：CMU 动捕烘焙覆盖段 =================
+   * 由 tools/retarget.js 生成并写入标记之间（勿手改标记内内容）。
+   * 只覆盖通过数值验收线的 clip（名称/loop/events 名不变）；
+   * 未通过验收的 clip 不在此段出现 → 上方原手工 clip 自动保留。
+   * BB.MOCAP_BAKED = 实际被动捕数据替换的 clip 名列表（viewer.html 用）。 */
+  /* A7_MOCAP_BAKED_START */
+
+  /* 由 tools/retarget.js 于 2026-07-03T11:07:03.470Z 生成（CMU 动捕烘焙，源见各注释） */
+  (function () {
+    var BAKED = {};
+    /* run_ball ← 06_03 帧4~16.8，原始周期 1.070s → 时长 0.7s，落地校正 0.035m，events {"plantR":0.02,"plantL":0.34,"bounce":0.9} */
+    BAKED.run_ball = {
+      duration: 0.7, loop: true, smooth: true,
+      events: {"plantR":0.02,"plantL":0.34,"bounce":0.9},
+      keys: [
+        {"t":0,"pose":{"spine":[0,0,0],"chest":[0,0,0],"head":[0.025,0.01,-0.001],"shoulderL":[-0.087,0.01,-0.226],"elbowL":[-0.822,0.189,-0.429],"shoulderR":[-0.297,-0.069,0.45],"elbowR":[-0.907,-0.236,0.477],"hipL":[0.191,0.063,0.347],"kneeL":[0,0,0],"ankleL":[-0.075,0.031,0],"hipR":[-0.36,-0.152,-0.148],"kneeR":[0.124,0.042,-0.002],"ankleR":[-0.267,0.196,0.07],"pelvis":[0,-0.087,0],"__root":[0,-0.035,0],"wristL":[-0.15,0,0],"wristR":[0.466,0,0]}},
+        {"t":0.1,"pose":{"spine":[-0.004,-0.027,-0.022],"chest":[-0.018,-0.025,0.013],"head":[0.03,0.027,-0.005],"shoulderL":[-0.007,-0.002,-0.177],"elbowL":[-0.808,0.196,-0.435],"shoulderR":[-0.269,0.026,0.37],"elbowR":[-0.508,-0.086,0.282],"hipL":[0.219,0.101,0.261],"kneeL":[0.238,-0.093,0.011],"ankleL":[0.179,0.012,0.016],"hipR":[-0.38,0.011,-0.197],"kneeR":[0.323,0.112,-0.022],"ankleR":[0.011,0.215,-0.001],"pelvis":[0,-0.102,0],"__root":[0,-0.027,0],"wristL":[-0.15,0,0],"wristR":[0.302,0,0]}},
+        {"t":0.2,"pose":{"spine":[-0.021,-0.062,-0.045],"chest":[-0.018,-0.039,0.021],"head":[0.041,0.029,0.004],"shoulderL":[0.147,-0.185,-0.11],"elbowL":[-0.707,0.15,-0.387],"shoulderR":[-0.23,0.406,0.259],"elbowR":[-0.413,-0.053,0.235],"hipL":[-0.054,0.091,0.175],"kneeL":[0.748,-0.247,0.099],"ankleL":[0.488,-0.074,0.015],"hipR":[-0.251,0.096,-0.321],"kneeR":[0.412,0.147,-0.026],"ankleR":[-0.04,0.12,-0.001],"pelvis":[0,-0.084,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[0.082,0,0]}},
+        {"t":0.3,"pose":{"spine":[-0.044,-0.085,-0.052],"chest":[-0.017,-0.046,0.057],"head":[0.027,0.013,0.001],"shoulderL":[0.271,-0.391,-0.075],"elbowL":[-0.541,0.098,-0.311],"shoulderR":[-0.141,0.494,0.204],"elbowR":[-0.619,-0.112,0.333],"hipL":[-0.343,0.085,0.134],"kneeL":[0.954,-0.298,0.147],"ankleL":[0.212,-0.06,0.009],"hipR":[-0.036,0.087,-0.435],"kneeR":[0.37,0.134,-0.028],"ankleR":[-0.177,0.088,0.013],"pelvis":[0,-0.051,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[-0.02,0,0]}},
+        {"t":0.4,"pose":{"spine":[-0.047,-0.105,-0.053],"chest":[-0.031,-0.068,0.076],"head":[0.021,0.011,0.014],"shoulderL":[0.36,-0.559,-0.055],"elbowL":[-0.459,0.062,-0.254],"shoulderR":[-0.025,0.504,0.179],"elbowR":[-1.027,-0.313,0.521],"hipL":[-0.534,0.135,0.134],"kneeL":[0.698,-0.23,0.087],"ankleL":[-0.002,-0.107,-0.01],"hipR":[0.145,0.072,-0.511],"kneeR":[0.328,0.126,-0.024],"ankleR":[-0.265,0.064,0.029],"pelvis":[0,-0.031,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[-0.076,0,0]}},
+        {"t":0.5,"pose":{"spine":[-0.022,-0.112,-0.052],"chest":[-0.008,-0.067,0.085],"head":[0.007,-0.014,0.004],"shoulderL":[0.421,-0.594,-0.022],"elbowL":[-0.51,0.087,-0.293],"shoulderR":[0.063,0.419,0.163],"elbowR":[-1.472,-0.58,0.61],"hipL":[-0.525,0.249,0.118],"kneeL":[0.263,-0.102,0.018],"ankleL":[-0.019,-0.202,-0.032],"hipR":[0.343,0.024,-0.549],"kneeR":[0.202,0.081,-0.003],"ankleR":[-0.227,0.067,0.021],"pelvis":[0,0.005,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[-0.065,0,0]}},
+        {"t":0.6,"pose":{"spine":[-0.029,-0.122,-0.04],"chest":[0.014,-0.067,0.096],"head":[0.007,-0.024,0.006],"shoulderL":[0.441,-0.574,0],"elbowL":[-0.543,0.085,-0.303],"shoulderR":[0.203,0.169,0.151],"elbowR":[-1.64,-0.675,0.618],"hipL":[-0.499,0.269,0.14],"kneeL":[0.246,-0.098,0.011],"ankleL":[0.083,-0.115,-0.009],"hipR":[0.414,0.034,-0.499],"kneeR":[0.349,0.133,-0.023],"ankleR":[-0.014,0.064,-0.006],"pelvis":[0,0.06,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[0.009,0,0]}},
+        {"t":0.7,"pose":{"spine":[-0.064,-0.105,-0.016],"chest":[0.002,-0.065,0.078],"head":[0.008,-0.041,0.009],"shoulderL":[0.384,-0.465,0],"elbowL":[-0.579,0.094,-0.321],"shoulderR":[0.216,-0.118,0.172],"elbowR":[-1.129,-0.368,0.554],"hipL":[-0.443,0.167,0.256],"kneeL":[0.413,-0.145,0.032],"ankleL":[0.133,-0.006,0.009],"hipR":[0.219,0.072,-0.373],"kneeR":[0.857,0.266,-0.136],"ankleR":[0.344,0.231,-0.076],"pelvis":[0,0.074,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[0.139,0,0]}},
+        {"t":0.8,"pose":{"spine":[-0.088,-0.095,-0.016],"chest":[0,-0.054,0.039],"head":[0.024,-0.037,0.027],"shoulderL":[0.265,-0.239,-0.078],"elbowL":[-0.682,0.146,-0.376],"shoulderR":[-0.08,0.298,0.188],"elbowR":[-0.426,-0.066,0.242],"hipL":[-0.265,0.13,0.35],"kneeL":[0.397,-0.146,0.03],"ankleL":[0.009,0.008,0.007],"hipR":[-0.08,0.105,-0.212],"kneeR":[1.058,0.313,-0.181],"ankleR":[0.048,0.068,-0.024],"pelvis":[0,0.048,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[0.366,0,0]}},
+        {"t":0.9,"pose":{"spine":[-0.065,-0.056,-0.025],"chest":[-0.001,-0.034,0.009],"head":[0.015,-0.034,0.026],"shoulderL":[0.212,-0.223,-0.13],"elbowL":[-0.901,0.239,-0.475],"shoulderR":[-0.12,0.744,0.216],"elbowR":[-0.462,-0.086,0.253],"hipL":[-0.093,0.121,0.392],"kneeL":[0.33,-0.123,0.02],"ankleL":[-0.065,0.036,0.001],"hipR":[-0.284,0.056,-0.148],"kneeR":[0.777,0.249,-0.11],"ankleR":[-0.087,0.065,0],"pelvis":[0,-0.019,0],"__root":[0,-0.008,0],"wristL":[-0.15,0,0],"wristR":[0.491,0,0]}},
+        {"t":1,"pose":{"spine":[0,0,0],"chest":[0,0,0],"head":[0.025,0.01,-0.001],"shoulderL":[-0.087,0.01,-0.226],"elbowL":[-0.822,0.189,-0.429],"shoulderR":[-0.297,-0.069,0.45],"elbowR":[-0.907,-0.236,0.477],"hipL":[0.191,0.063,0.347],"kneeL":[0,0,0],"ankleL":[-0.075,0.031,0],"hipR":[-0.36,-0.152,-0.148],"kneeR":[0.124,0.042,-0.002],"ankleR":[-0.267,0.196,0.07],"pelvis":[0,-0.087,0],"__root":[0,-0.035,0],"wristL":[-0.15,0,0],"wristR":[0.466,0,0]}}
+      ]
+    };
+    /* sprint_ball ← 由烘焙 run_ball 派生：前倾×1.3+0.10、幅度×1.15、时长×0.85=0.6s，落地校正 0.006m */
+    BAKED.sprint_ball = {
+      duration: 0.6, loop: true, smooth: true,
+      events: {"plantR":0.02,"plantL":0.34,"bounce":0.9},
+      keys: [
+        {"t":0,"pose":{"spine":[0.094,0.012,0.005],"chest":[0.099,0.007,-0.007],"head":[0.026,0.012,-0.002],"shoulderL":[-0.136,0.06,-0.247],"elbowL":[-0.847,0.197,-0.44],"shoulderR":[-0.331,-0.122,0.482],"elbowR":[-0.914,-0.233,0.487],"hipL":[0.255,0.051,0.364],"kneeL":[-0.064,0.022,-0.007],"ankleL":[-0.1,0.043,0],"hipR":[-0.41,-0.181,-0.119],"kneeR":[0.071,0.024,0.006],"ankleR":[-0.297,0.208,0.08],"pelvis":[0,-0.097,0],"__root":[0,-0.044,0],"wristL":[-0.15,0,0],"wristR":[0.51,0,0]}},
+        {"t":0.1,"pose":{"spine":[0.09,-0.02,-0.02],"chest":[0.078,-0.022,0.008],"head":[0.031,0.032,-0.007],"shoulderL":[-0.044,0.046,-0.19],"elbowL":[-0.831,0.205,-0.446],"shoulderR":[-0.299,-0.013,0.39],"elbowR":[-0.455,-0.06,0.262],"hipL":[0.287,0.095,0.266],"kneeL":[0.209,-0.085,0.006],"ankleL":[0.192,0.021,0.018],"hipR":[-0.433,0.007,-0.176],"kneeR":[0.299,0.105,-0.017],"ankleR":[0.023,0.23,-0.002],"pelvis":[0,-0.114,0],"__root":[0,-0.035,0],"wristL":[-0.15,0,0],"wristR":[0.322,0,0]}},
+        {"t":0.2,"pose":{"spine":[0.07,-0.06,-0.047],"chest":[0.078,-0.038,0.017],"head":[0.044,0.034,0.003],"shoulderL":[0.133,-0.164,-0.113],"elbowL":[-0.715,0.152,-0.391],"shoulderR":[-0.254,0.424,0.263],"elbowR":[-0.346,-0.022,0.208],"hipL":[-0.027,0.083,0.167],"kneeL":[0.796,-0.262,0.107],"ankleL":[0.547,-0.078,0.017],"hipR":[-0.285,0.104,-0.318],"kneeR":[0.402,0.145,-0.022],"ankleR":[-0.036,0.12,-0.002],"pelvis":[0,-0.094,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[0.069,0,0]}},
+        {"t":0.3,"pose":{"spine":[0.044,-0.086,-0.055],"chest":[0.079,-0.046,0.058],"head":[0.028,0.016,0],"shoulderL":[0.276,-0.401,-0.073],"elbowL":[-0.524,0.093,-0.304],"shoulderR":[-0.152,0.525,0.199],"elbowR":[-0.583,-0.09,0.321],"hipL":[-0.359,0.077,0.119],"kneeL":[1.033,-0.32,0.162],"ankleL":[0.23,-0.062,0.01],"hipR":[-0.037,0.094,-0.449],"kneeR":[0.354,0.13,-0.024],"ankleR":[-0.193,0.084,0.015],"pelvis":[0,-0.056,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[-0.048,0,0]}},
+        {"t":0.4,"pose":{"spine":[0.04,-0.109,-0.056],"chest":[0.063,-0.071,0.08],"head":[0.021,0.014,0.015],"shoulderL":[0.378,-0.595,-0.05],"elbowL":[-0.43,0.051,-0.238],"shoulderR":[-0.019,0.537,0.171],"elbowR":[-1.052,-0.321,0.537],"hipL":[-0.579,0.134,0.119],"kneeL":[0.738,-0.242,0.093],"ankleL":[-0.016,-0.116,-0.012],"hipR":[0.171,0.077,-0.537],"kneeR":[0.305,0.121,-0.019],"ankleR":[-0.295,0.056,0.033],"pelvis":[0,-0.033,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[-0.113,0,0]}},
+        {"t":0.5,"pose":{"spine":[0.069,-0.117,-0.055],"chest":[0.09,-0.07,0.091],"head":[0.005,-0.015,0.003],"shoulderL":[0.448,-0.635,-0.012],"elbowL":[-0.488,0.08,-0.283],"shoulderR":[0.083,0.439,0.152],"elbowR":[-1.564,-0.628,0.64],"hipL":[-0.569,0.265,0.101],"kneeL":[0.238,-0.095,0.014],"ankleL":[-0.036,-0.225,-0.037],"hipR":[0.398,0.022,-0.58],"kneeR":[0.16,0.069,0.005],"ankleR":[-0.251,0.059,0.024],"pelvis":[0,0.009,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[-0.1,0,0]}},
+        {"t":0.6,"pose":{"spine":[0.061,-0.129,-0.041],"chest":[0.115,-0.07,0.103],"head":[0.005,-0.027,0.006],"shoulderL":[0.471,-0.612,0.013],"elbowL":[-0.526,0.078,-0.295],"shoulderR":[0.244,0.151,0.138],"elbowR":[-1.757,-0.738,0.649],"hipL":[-0.539,0.288,0.126],"kneeL":[0.219,-0.09,0.006],"ankleL":[0.081,-0.125,-0.01],"hipR":[0.48,0.033,-0.523],"kneeR":[0.329,0.129,-0.018],"ankleR":[-0.006,0.056,-0.007],"pelvis":[0,0.072,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[-0.015,0,0]}},
+        {"t":0.7,"pose":{"spine":[0.021,-0.109,-0.014],"chest":[0.101,-0.068,0.083],"head":[0.006,-0.046,0.009],"shoulderL":[0.405,-0.486,0.013],"elbowL":[-0.568,0.088,-0.315],"shoulderR":[0.259,-0.179,0.163],"elbowR":[-1.169,-0.385,0.575],"hipL":[-0.474,0.171,0.26],"kneeL":[0.411,-0.145,0.03],"ankleL":[0.139,0,0.01],"hipR":[0.256,0.077,-0.378],"kneeR":[0.914,0.282,-0.148],"ankleR":[0.406,0.248,-0.088],"pelvis":[0,0.088,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[0.134,0,0]}},
+        {"t":0.8,"pose":{"spine":[-0.007,-0.098,-0.014],"chest":[0.099,-0.055,0.038],"head":[0.025,-0.042,0.03],"shoulderL":[0.269,-0.227,-0.077],"elbowL":[-0.686,0.148,-0.379],"shoulderR":[-0.082,0.3,0.181],"elbowR":[-0.361,-0.037,0.216],"hipL":[-0.27,0.128,0.368],"kneeL":[0.392,-0.146,0.028],"ankleL":[-0.004,0.016,0.008],"hipR":[-0.088,0.115,-0.193],"kneeR":[1.145,0.336,-0.2],"ankleR":[0.065,0.061,-0.028],"pelvis":[0,0.058,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[0.395,0,0]}},
+        {"t":0.9,"pose":{"spine":[0.019,-0.053,-0.024],"chest":[0.098,-0.032,0.003],"head":[0.014,-0.038,0.029],"shoulderL":[0.208,-0.208,-0.136],"elbowL":[-0.938,0.255,-0.492],"shoulderR":[-0.128,0.813,0.213],"elbowR":[-0.402,-0.06,0.229],"hipL":[-0.072,0.118,0.416],"kneeL":[0.315,-0.119,0.016],"ankleL":[-0.089,0.049,0.001],"hipR":[-0.323,0.058,-0.119],"kneeR":[0.822,0.262,-0.118],"ankleR":[-0.09,0.057,0],"pelvis":[0,-0.019,0],"__root":[0,-0.013,0],"wristL":[-0.15,0,0],"wristR":[0.539,0,0]}},
+        {"t":1,"pose":{"spine":[0.094,0.012,0.005],"chest":[0.099,0.007,-0.007],"head":[0.026,0.012,-0.002],"shoulderL":[-0.136,0.06,-0.247],"elbowL":[-0.847,0.197,-0.44],"shoulderR":[-0.331,-0.122,0.482],"elbowR":[-0.914,-0.233,0.487],"hipL":[0.255,0.051,0.364],"kneeL":[-0.064,0.022,-0.007],"ankleL":[-0.1,0.043,0],"hipR":[-0.41,-0.181,-0.119],"kneeR":[0.071,0.024,0.006],"ankleR":[-0.297,0.208,0.08],"pelvis":[0,-0.097,0],"__root":[0,-0.044,0],"wristL":[-0.15,0,0],"wristR":[0.51,0,0]}}
+      ]
+    };
+    /* dribble_idle ← 06_13 帧2 起 7.0 帧（1 拍），时长 0.63s，落地校正 0.062m，events {"bounce":0.46} */
+    BAKED.dribble_idle = {
+      duration: 0.63, loop: true, smooth: true,
+      events: {"bounce":0.46},
+      keys: [
+        {"t":0,"pose":{"spine":[0.08,-0.003,-0.052],"chest":[0.017,0,0],"head":[-0.045,-0.074,0.029],"shoulderL":[0.145,-0.329,-0.036],"elbowL":[-0.611,0.115,-0.328],"shoulderR":[-0.121,0.146,0.317],"elbowR":[-1.289,-0.476,0.597],"hipL":[-0.101,0.127,0.417],"kneeL":[0.38,-0.147,0.027],"ankleL":[0.044,0.063,0.018],"hipR":[-0.408,-0.086,-0.217],"kneeR":[0.365,0.133,-0.029],"ankleR":[-0.001,-0.034,-0.022],"pelvis":[0,-0.158,0],"__root":[0.013,-0.036,0.011],"wristL":[-0.18,0,0],"wristR":[-0.056,0,0]}},
+        {"t":0.091,"pose":{"spine":[0.113,-0.025,-0.051],"chest":[0.017,-0.011,-0.002],"head":[-0.034,-0.073,0.03],"shoulderL":[0.093,-0.239,-0.036],"elbowL":[-0.588,0.113,-0.324],"shoulderR":[-0.156,-0.026,0.356],"elbowR":[-1.16,-0.389,0.561],"hipL":[-0.07,0.107,0.437],"kneeL":[0.38,-0.147,0.027],"ankleL":[0.033,0.052,0.017],"hipR":[-0.475,0.019,-0.209],"kneeR":[0.408,0.147,-0.032],"ankleR":[0.044,-0.002,-0.018],"pelvis":[0,-0.12,0],"__root":[0.015,-0.036,0.002],"wristL":[-0.18,0,0],"wristR":[0.001,0,0]}},
+        {"t":0.182,"pose":{"spine":[0.136,-0.044,-0.059],"chest":[0.012,-0.023,0.001],"head":[-0.027,-0.068,0.029],"shoulderL":[0.056,-0.148,-0.021],"elbowL":[-0.584,0.112,-0.323],"shoulderR":[-0.211,-0.161,0.393],"elbowR":[-0.959,-0.279,0.487],"hipL":[-0.051,0.084,0.445],"kneeL":[0.417,-0.155,0.035],"ankleL":[0.074,0.055,0.014],"hipR":[-0.51,0.081,-0.215],"kneeR":[0.465,0.166,-0.039],"ankleR":[0.036,-0.01,-0.02],"pelvis":[0,-0.091,0],"__root":[0.016,-0.043,-0.001],"wristL":[-0.18,0,0],"wristR":[0.085,0,0]}},
+        {"t":0.273,"pose":{"spine":[0.147,-0.056,-0.08],"chest":[0.001,-0.035,0.01],"head":[-0.028,-0.058,0.028],"shoulderL":[0.038,-0.058,0.012],"elbowL":[-0.608,0.115,-0.327],"shoulderR":[-0.292,-0.246,0.429],"elbowR":[-0.658,-0.136,0.361],"hipL":[-0.051,0.059,0.436],"kneeL":[0.506,-0.176,0.053],"ankleL":[0.185,0.079,0.009],"hipR":[-0.501,0.083,-0.24],"kneeR":[0.54,0.194,-0.049],"ankleR":[-0.043,-0.074,-0.033],"pelvis":[0,-0.074,0],"__root":[0.015,-0.06,0.007],"wristL":[-0.18,0,0],"wristR":[0.274,0,0]}},
+        {"t":0.364,"pose":{"spine":[0.156,-0.088,-0.09],"chest":[-0.01,-0.056,0.008],"head":[-0.038,-0.036,0.034],"shoulderL":[0.035,0.012,0.017],"elbowL":[-0.663,0.131,-0.359],"shoulderR":[-0.481,0.032,0.456],"elbowR":[-0.451,-0.072,0.256],"hipL":[-0.166,0.018,0.4],"kneeL":[0.675,-0.226,0.087],"ankleL":[0.469,0.091,-0.031],"hipR":[-0.48,0.081,-0.232],"kneeR":[0.617,0.213,-0.072],"ankleR":[-0.093,-0.103,-0.034],"pelvis":[0,-0.038,0],"__root":[0.002,-0.062,-0.002],"wristL":[-0.18,0,0],"wristR":[0.4,0,0]}},
+        {"t":0.455,"pose":{"spine":[0.162,-0.114,-0.098],"chest":[-0.014,-0.072,0.005],"head":[-0.047,-0.019,0.039],"shoulderL":[0.04,0.042,0.017],"elbowL":[-0.707,0.144,-0.385],"shoulderR":[-0.618,0.301,0.484],"elbowR":[-0.34,-0.043,0.197],"hipL":[-0.302,-0.024,0.35],"kneeL":[0.847,-0.274,0.126],"ankleL":[0.606,0.093,-0.051],"hipR":[-0.451,0.087,-0.217],"kneeR":[0.682,0.228,-0.091],"ankleR":[-0.142,-0.125,-0.038],"pelvis":[0,-0.007,0],"__root":[-0.01,-0.062,-0.007],"wristL":[-0.18,0,0],"wristR":[0.426,0,0]}},
+        {"t":0.545,"pose":{"spine":[0.162,-0.116,-0.108],"chest":[-0.003,-0.072,0.006],"head":[-0.047,-0.019,0.039],"shoulderL":[0.064,-0.024,0.017],"elbowL":[-0.707,0.144,-0.385],"shoulderR":[-0.572,0.375,0.517],"elbowR":[-0.439,-0.069,0.249],"hipL":[-0.439,-0.061,0.276],"kneeL":[0.989,-0.302,0.166],"ankleL":[0.281,0.071,-0.004],"hipR":[-0.411,0.117,-0.197],"kneeR":[0.714,0.233,-0.091],"ankleR":[-0.199,-0.143,-0.052],"pelvis":[0,-0.001,0],"__root":[-0.01,-0.062,0],"wristL":[-0.18,0,0],"wristR":[0.341,0,0]}},
+        {"t":0.636,"pose":{"spine":[0.163,-0.093,-0.121],"chest":[0,-0.049,0.01],"head":[-0.047,-0.026,0.048],"shoulderL":[0.115,-0.115,0.002],"elbowL":[-0.682,0.136,-0.374],"shoulderR":[-0.457,0.431,0.493],"elbowR":[-0.635,-0.136,0.349],"hipL":[-0.567,-0.061,0.211],"kneeL":[1.008,-0.304,0.167],"ankleL":[0.107,0.033,0.009],"hipR":[-0.358,0.128,-0.181],"kneeR":[0.723,0.235,-0.092],"ankleR":[-0.262,-0.129,-0.046],"pelvis":[0,-0.019,0],"__root":[-0.01,-0.062,-0.004],"wristL":[-0.18,0,0],"wristR":[0.174,0,0]}},
+        {"t":0.727,"pose":{"spine":[0.165,-0.065,-0.134],"chest":[-0.001,-0.018,0.013],"head":[-0.048,-0.036,0.057],"shoulderL":[0.177,-0.215,-0.016],"elbowL":[-0.646,0.124,-0.358],"shoulderR":[-0.313,0.48,0.437],"elbowR":[-0.873,-0.225,0.463],"hipL":[-0.682,-0.042,0.151],"kneeL":[0.956,-0.291,0.147],"ankleL":[0.009,-0.007,0.008],"hipR":[-0.293,0.131,-0.174],"kneeR":[0.716,0.234,-0.09],"ankleR":[-0.326,-0.1,-0.03],"pelvis":[0,-0.04,0],"__root":[-0.009,-0.062,-0.011],"wristL":[-0.18,0,0],"wristR":[0.036,0,0]}},
+        {"t":0.818,"pose":{"spine":[0.177,-0.066,-0.134],"chest":[0,-0.006,0.004],"head":[-0.058,-0.049,0.047],"shoulderL":[0.223,-0.29,-0.005],"elbowL":[-0.611,0.114,-0.34],"shoulderR":[-0.174,0.541,0.322],"elbowR":[-1.11,-0.351,0.533],"hipL":[-0.728,0,0.103],"kneeL":[0.771,-0.248,0.099],"ankleL":[-0.002,-0.007,0.008],"hipR":[-0.181,0.128,-0.205],"kneeR":[0.661,0.222,-0.076],"ankleR":[-0.382,-0.076,-0.008],"pelvis":[0,-0.023,0],"__root":[-0.009,-0.062,-0.003],"wristL":[-0.18,0,0],"wristR":[-0.035,0,0]}},
+        {"t":0.909,"pose":{"spine":[0.179,-0.07,-0.115],"chest":[0.008,-0.017,0.008],"head":[-0.06,-0.058,0.039],"shoulderL":[0.25,-0.351,0],"elbowL":[-0.595,0.11,-0.332],"shoulderR":[-0.092,0.457,0.253],"elbowR":[-1.275,-0.454,0.583],"hipL":[-0.643,0.103,0.108],"kneeL":[0.547,-0.191,0.053],"ankleL":[-0.018,-0.06,-0.006],"hipR":[-0.124,0.093,-0.228],"kneeR":[0.596,0.207,-0.065],"ankleR":[-0.364,-0.044,0],"pelvis":[0,-0.007,0],"__root":[-0.014,-0.059,0.007],"wristL":[-0.18,0,0],"wristR":[-0.069,0,0]}},
+        {"t":1,"pose":{"spine":[0.08,-0.003,-0.052],"chest":[0.017,0,0],"head":[-0.045,-0.074,0.029],"shoulderL":[0.145,-0.329,-0.036],"elbowL":[-0.611,0.115,-0.328],"shoulderR":[-0.121,0.146,0.317],"elbowR":[-1.289,-0.476,0.597],"hipL":[-0.101,0.127,0.417],"kneeL":[0.38,-0.147,0.027],"ankleL":[0.044,0.063,0.018],"hipR":[-0.408,-0.086,-0.217],"kneeR":[0.365,0.133,-0.029],"ankleR":[-0.001,-0.034,-0.022],"pelvis":[0,-0.158,0],"__root":[0.013,-0.036,0.011],"wristL":[-0.18,0,0],"wristR":[-0.056,0,0]}}
+      ]
+    };
+    /* crossover ← 06_12 帧0~13 压缩到 0.6s（源 1.08s），落地校正 0.065m，switch=0.31 */
+    BAKED.crossover = {
+      duration: 0.6, loop: false, smooth: true,
+      events: {"switch":0.31},
+      keys: [
+        {"t":0,"pose":{"spine":[0.131,-0.146,-0.055],"chest":[0.018,-0.074,0.025],"head":[-0.045,-0.007,0.002],"shoulderL":[0.265,-0.286,-0.052],"elbowL":[-0.686,0.143,-0.378],"shoulderR":[-0.261,0.534,0.262],"elbowR":[-0.704,-0.15,0.385],"hipL":[-0.46,0.184,0.25],"kneeL":[0.447,-0.168,0.033],"ankleL":[-0.007,-0.041,0.002],"hipR":[-0.21,0.183,-0.117],"kneeR":[0.637,0.218,-0.069],"ankleR":[-0.37,0.073,0.044],"pelvis":[0,-0.171,0],"__root":[0.014,-0.039,0.02],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}},
+        {"t":0.1,"pose":{"spine":[0.111,-0.122,-0.06],"chest":[0,-0.066,0.007],"head":[-0.045,-0.012,0.003],"shoulderL":[0.227,-0.433,-0.13],"elbowL":[-0.636,0.125,-0.354],"shoulderR":[-0.289,0.517,0.351],"elbowR":[-0.972,-0.275,0.5],"hipL":[-0.402,0.135,0.227],"kneeL":[0.442,-0.169,0.032],"ankleL":[-0.078,-0.172,-0.038],"hipR":[-0.214,0.314,-0.136],"kneeR":[0.637,0.218,-0.079],"ankleR":[-0.339,0.045,0.029],"pelvis":[0,-0.024,0],"__root":[-0.014,-0.039,0.018],"wristL":[-0.15,0,0],"wristR":[0.101,0,0]}},
+        {"t":0.2,"pose":{"spine":[0.09,-0.12,-0.062],"chest":[0,-0.065,0.007],"head":[-0.045,-0.035,0.006],"shoulderL":[0.218,-0.494,-0.133],"elbowL":[-0.729,0.159,-0.397],"shoulderR":[-0.383,0.438,0.47],"elbowR":[-1.265,-0.444,0.578],"hipL":[-0.367,0.102,0.193],"kneeL":[0.43,-0.169,0.03],"ankleL":[-0.144,-0.279,-0.085],"hipR":[-0.119,0.227,-0.231],"kneeR":[0.502,0.179,-0.051],"ankleR":[-0.368,0.011,0.026],"pelvis":[0,0.059,0],"__root":[-0.015,-0.039,0.013],"wristL":[-0.109,0,0],"wristR":[0.173,0,0]}},
+        {"t":0.3,"pose":{"spine":[0.072,-0.129,-0.075],"chest":[0.001,-0.074,0.022],"head":[-0.045,-0.057,0.009],"shoulderL":[0.225,-0.423,-0.096],"elbowL":[-0.869,0.224,-0.454],"shoulderR":[-0.543,0.111,0.608],"elbowR":[-1.417,-0.542,0.62],"hipL":[-0.326,0.091,0.132],"kneeL":[0.446,-0.169,0.033],"ankleL":[-0.25,-0.353,-0.15],"hipR":[-0.047,0.135,-0.326],"kneeR":[0.405,0.157,-0.031],"ankleR":[-0.305,0.03,0.018],"pelvis":[0,0.14,0],"__root":[-0.015,-0.039,0.007],"wristL":[0.098,0,0],"wristR":[0.546,0,0]}},
+        {"t":0.4,"pose":{"spine":[0.084,-0.128,-0.079],"chest":[-0.017,-0.075,0.022],"head":[-0.042,-0.056,0.027],"shoulderL":[0.198,-0.23,-0.084],"elbowL":[-0.929,0.252,-0.48],"shoulderR":[-0.447,-0.314,0.691],"elbowR":[-1.281,-0.462,0.587],"hipL":[-0.41,0.051,0.108],"kneeL":[0.529,-0.184,0.057],"ankleL":[-0.175,-0.397,-0.123],"hipR":[-0.092,0.071,-0.346],"kneeR":[0.394,0.139,-0.022],"ankleR":[-0.237,0.059,0.025],"pelvis":[0,0.14,0],"__root":[-0.008,-0.039,-0.002],"wristL":[-0.084,0,0],"wristR":[0.219,0,0]}},
+        {"t":0.5,"pose":{"spine":[0.07,-0.136,-0.078],"chest":[-0.016,-0.076,0.031],"head":[-0.028,-0.047,0.026],"shoulderL":[0.161,-0.081,-0.061],"elbowL":[-0.966,0.265,-0.5],"shoulderR":[-0.287,-0.435,0.611],"elbowR":[-0.914,-0.266,0.469],"hipL":[-0.431,0.052,0.129],"kneeL":[0.542,-0.195,0.053],"ankleL":[-0.09,-0.105,-0.035],"hipR":[-0.076,0.061,-0.353],"kneeR":[0.399,0.144,-0.031],"ankleR":[-0.256,0.038,0.018],"pelvis":[0,0.062,0],"__root":[0.015,-0.039,-0.009],"wristL":[-0.149,0,0],"wristR":[0.101,0,0]}},
+        {"t":0.6,"pose":{"spine":[0.085,-0.159,-0.077],"chest":[-0.016,-0.091,0.037],"head":[-0.028,-0.039,0.025],"shoulderL":[0.185,-0.018,-0.024],"elbowL":[-0.978,0.275,-0.507],"shoulderR":[-0.381,-0.137,0.419],"elbowR":[-0.45,-0.074,0.26],"hipL":[-0.392,0.145,0.211],"kneeL":[0.421,-0.155,0.032],"ankleL":[-0.048,0.119,0.034],"hipR":[-0.094,0.071,-0.328],"kneeR":[0.429,0.155,-0.034],"ankleR":[-0.261,0.004,0.003],"pelvis":[0,-0.03,0],"__root":[0.014,-0.039,0],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}},
+        {"t":0.7,"pose":{"spine":[0.073,-0.158,-0.096],"chest":[-0.016,-0.077,0.038],"head":[-0.028,-0.039,0.025],"shoulderL":[0.267,-0.072,0.002],"elbowL":[-0.94,0.251,-0.481],"shoulderR":[-0.271,0.256,0.284],"elbowR":[-0.518,-0.083,0.29],"hipL":[-0.394,0.247,0.265],"kneeL":[0.362,-0.132,0.016],"ankleL":[0.044,0.061,0.018],"hipR":[-0.09,0.1,-0.298],"kneeR":[0.417,0.155,-0.032],"ankleR":[-0.245,-0.009,-0.003],"pelvis":[0,-0.155,0],"__root":[0.016,-0.039,-0.002],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}},
+        {"t":0.8,"pose":{"spine":[0.104,-0.119,-0.074],"chest":[-0.017,-0.067,0.016],"head":[-0.035,-0.039,0.024],"shoulderL":[0.342,-0.198,0.03],"elbowL":[-0.848,0.201,-0.445],"shoulderR":[-0.013,0.378,0.12],"elbowR":[-0.838,-0.208,0.44],"hipL":[-0.403,0.198,0.27],"kneeL":[0.362,-0.132,0.016],"ankleL":[0.017,0.011,0.01],"hipR":[-0.116,0.094,-0.275],"kneeR":[0.433,0.155,-0.034],"ankleR":[-0.217,-0.1,-0.037],"pelvis":[0,-0.179,0],"__root":[0.018,-0.039,-0.004],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}},
+        {"t":0.9,"pose":{"spine":[0.094,-0.096,-0.065],"chest":[-0.005,-0.054,0.009],"head":[-0.046,-0.027,0.022],"shoulderL":[0.401,-0.279,0.074],"elbowL":[-0.769,0.169,-0.416],"shoulderR":[0.08,0.338,0.074],"elbowR":[-1.029,-0.314,0.517],"hipL":[-0.374,0.067,0.227],"kneeL":[0.399,-0.141,0.027],"ankleL":[-0.074,-0.085,-0.026],"hipR":[-0.103,0.022,-0.307],"kneeR":[0.42,0.155,-0.032],"ankleR":[-0.165,-0.21,-0.067],"pelvis":[0,-0.032,0],"__root":[0.022,-0.039,-0.006],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}},
+        {"t":1,"pose":{"spine":[0.093,-0.072,-0.049],"chest":[-0.018,-0.034,-0.006],"head":[-0.045,-0.024,0.004],"shoulderL":[0.396,-0.234,0.05],"elbowL":[-0.741,0.164,-0.398],"shoulderR":[-0.067,0.257,0.126],"elbowR":[-1.178,-0.378,0.562],"hipL":[-0.328,-0.027,0.245],"kneeL":[0.432,-0.145,0.035],"ankleL":[-0.211,-0.228,-0.103],"hipR":[-0.12,-0.023,-0.295],"kneeR":[0.433,0.155,-0.034],"ankleR":[-0.162,-0.352,-0.111],"pelvis":[0,0.211,0],"__root":[-0.012,-0.039,-0.004],"wristL":[-0.15,0,0],"wristR":[0.1,0,0]}}
+      ]
+    };
+    var list = [];
+    for (var n in BAKED) { CLIPS[n] = BAKED[n]; list.push(n); }
+    BB.MOCAP_BAKED = list;
+  })();
+
+  /* A7_MOCAP_BAKED_END */
+
   (function () {
     for (var n in CLIPS) {
       CLIPS[n].keys.sort(function (a, b) { return a.t - b.t; });
@@ -17718,7 +17808,13 @@ window.CANNON=module.exports;})();
 <script>
 /* ui.js —— 全 DOM 中文街头风界面（特效/UI/音效程序员）
  * BB.UI = { init(gameApi), update(dt), showMeter(pct,greenLo,greenHi), hideMeter(),
+ *           setMeterAnchor(worldPos), setMeterDisturb(level),
  *           banner(main,sub,style), popup(text,worldPos), _camera:null }
+ * v1.7 B1：投篮/扣篮条默认改为「球员身旁 SVG 弧形条」（~110°、半径 64px、宽 10px），
+ *   锚定 game.js 每帧注入的世界坐标（球员 pos+1.3m），经 BB.UI._camera.project 转屏幕坐标，
+ *   弧带中线位于球员右侧 ≈70px、从弧底(0)向弧顶(1)填充、屏幕边缘 clamp；
+ *   绿窗弧段 / perfect 金线刻度 / release 定格变色 / v1.6 干扰抖动全部迁移到弧渲染；
+ *   _camera 或锚点缺失 → 自动回退旧竖条 #bb-meter（旧渲染路径完整保留）。
  * gameApi = { start(opts), restart(), pause(), resume(), getState() }
  * 主菜单 / HUD / 投篮条 / 横幅队列 / 世界坐标飘字 / 暂停菜单 / 结算屏。
  * v1.5 B：英雄式全屏选人屏（上半 3D 预览自建 WebGLRenderer + AnimCtrl idle 自转，
@@ -17745,6 +17841,7 @@ window.CANNON=module.exports;})();
     mode: 'match',                    /* v1.2 C3 'match'|'train' */
     hudT: 0,
     meterFreeze: 0, meterVisible: false,
+    meterAnchor: { has: false, x: 0, y: 0, z: 0 },  /* v1.7 B1 弧条世界锚点（game 每帧注入） */
     queue: [], actives: [],           /* v1.3 A1 横幅：右侧纵排，最多 3 条同显不重叠 */
     pops: []
   };
@@ -17825,6 +17922,9 @@ window.CANNON=module.exports;})();
     '.bb-mperf{position:absolute;left:-5px;width:calc(100% + 10px);height:3px;background:#ffd700;',
     'box-shadow:0 0 7px rgba(255,215,0,.95);border-radius:2px;}',
     '.bb-mptr{position:absolute;left:-8px;width:calc(100% + 16px);height:6px;background:#fff;border:1px solid #000;border-radius:3px;}',
+    /* v1.7 B1 弧形投篮条（锚定球员身旁；#bb-meter 旧竖条保留为 fallback） */
+    '#bb-arc{position:absolute;left:0;top:0;width:120px;height:140px;display:none;pointer-events:none;',
+    'filter:drop-shadow(2px 3px 0 rgba(0,0,0,.45));}',
     /* 横幅（v1.3 A1：移到画面右侧带，从右滑入，纵向排布不重叠——不再挡中央篮筐区域） */
     '#bb-bnbox{position:absolute;top:22vh;right:9vw;left:auto;width:auto;max-width:36vw;',
     'display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none;}',
@@ -17996,7 +18096,7 @@ window.CANNON=module.exports;})();
     document.head.appendChild(st);
     els.root = mk('div', '', document.body);
     els.root.id = 'bb-ui';
-    buildMenu(); buildSelect(); buildHud(); buildMeter(); buildBanner(); buildPops(); buildPause(); buildResult();
+    buildMenu(); buildSelect(); buildHud(); buildMeter(); buildArc(); buildBanner(); buildPops(); buildPause(); buildResult();
   }
 
   function optRow(parent, label, items, get, set) {
@@ -18106,6 +18206,79 @@ window.CANNON=module.exports;})();
     els.mfill = mk('div', 'bb-mfill', m);   /* 顶部向下的亮色填充 */
     els.mperf = mk('div', 'bb-mperf', m);   /* perfect 金色细线（绿区中心） */
     els.mptr = mk('div', 'bb-mptr', m);     /* 前沿指针 = 当前值 */
+  }
+
+  /* ---------- v1.7 B1 弧形条构建 ----------
+   * 几何：~110° 圆弧（-55°..+55°，0=弧底 1=弧顶）、半径 64px、条宽 10px；
+   * SVG 本地坐标 120×140，圆心 (30,70)——屏幕定位时圆心≈球员投影点右移 6px，
+   * 弧带中线（角度 0 处）位于球员右侧 6+64≈70px。整体高约 105px，
+   * 比旧竖条（34vh ≈ 245px@720p）小一半以上，扣篮时不再遮挡人物动作。 */
+  var ARC = { W: 120, H: 140, CX: 30, CY: 70, R: 64, A0: -55, A1: 55 };
+  function arcPt(v, r) {
+    var a = (ARC.A0 + (ARC.A1 - ARC.A0) * clamp01(v)) * Math.PI / 180;
+    if (typeof r !== 'number' || !isFinite(r)) r = ARC.R;
+    return [ARC.CX + Math.cos(a) * r, ARC.CY - Math.sin(a) * r];
+  }
+  function arcPath(v0, v1) {
+    var p0 = arcPt(v0), p1 = arcPt(v1);
+    /* 底→顶经过弧带右侧最凸点 = 屏幕坐标系逆时针 → sweep-flag 0；跨度 <180° → large-arc 0 */
+    return 'M' + p0[0].toFixed(2) + ' ' + p0[1].toFixed(2) +
+      ' A' + ARC.R + ' ' + ARC.R + ' 0 0 0 ' + p1[0].toFixed(2) + ' ' + p1[1].toFixed(2);
+  }
+  function setArcTick(ln, v, r0, r1) {
+    if (!ln) return;
+    var p0 = arcPt(v, r0), p1 = arcPt(v, r1);
+    ln.setAttribute('x1', p0[0].toFixed(2)); ln.setAttribute('y1', p0[1].toFixed(2));
+    ln.setAttribute('x2', p1[0].toFixed(2)); ln.setAttribute('y2', p1[1].toFixed(2));
+  }
+  function buildArc() {
+    /* createElementNS 不可用/构建失败 → els.arc 缺省 → showMeter 永走旧竖条 fallback */
+    if (typeof document.createElementNS !== 'function') return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var box = null;
+    try {
+      box = mk('div', '', els.root);
+      box.id = 'bb-arc';
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 ' + ARC.W + ' ' + ARC.H);
+      svg.setAttribute('width', String(ARC.W));
+      svg.setAttribute('height', String(ARC.H));
+      box.appendChild(svg);
+      function path(w, color, cap) {
+        var p = document.createElementNS(NS, 'path');
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', color);
+        p.setAttribute('stroke-width', String(w));
+        p.setAttribute('stroke-linecap', cap || 'butt');
+        svg.appendChild(p);
+        return p;
+      }
+      function line(w, color, op) {
+        var l = document.createElementNS(NS, 'line');
+        l.setAttribute('stroke', color);
+        l.setAttribute('stroke-width', String(w));
+        l.setAttribute('stroke-linecap', 'round');
+        if (op) l.setAttribute('stroke-opacity', String(op));
+        svg.appendChild(l);
+        return l;
+      }
+      var full = arcPath(0, 1);
+      els.arcRim = path(14, '#14100a', 'round');             /* 街头风黑粗描边底 */
+      els.arcRim.setAttribute('d', full);
+      els.arcTrack = path(10, 'rgba(8,10,14,.72)', 'round'); /* 槽底 */
+      els.arcTrack.setAttribute('d', full);
+      els.arcZone = path(10, 'rgba(46,213,115,.5)');         /* 绿窗弧段 */
+      els.arcFill = path(10, '#37b6ff');                     /* 填充：弧底(0)→弧顶(1) */
+      els.arcPerfGlow = line(7, '#ffd700', 0.35);            /* perfect 金线辉光 */
+      els.arcPerf = line(3, '#ffd700');                      /* perfect 金线刻度 */
+      els.arcPtrO = line(8, '#14100a');                      /* 前沿指针描边 */
+      els.arcPtr = line(4, '#fff');                          /* 前沿指针 = 当前值 */
+      els.arc = box;
+    } catch (e) {
+      els.arc = null;
+      try { if (box && box.parentNode) box.parentNode.removeChild(box); } catch (e2) {}
+      if (typeof console !== 'undefined') console.warn('[BB.UI] 弧形条构建失败，回退旧竖条:', e && e.message);
+    }
   }
 
   function buildBanner() {
@@ -18581,9 +18754,74 @@ window.CANNON=module.exports;})();
   }
 
   /* ---------- 投篮/扣篮条（v1.3 A2：底=0 顶=1，填充从底向上涨；投篮扣篮共用）
-   * 绿窗由 game.js 传入新窗口语义 [0.66,0.99]（顶端向下 1/3 区段），此处按 1-x 映射到屏幕。 */
+   * v1.7 B1：默认走「球员身旁弧形条」；_camera/锚点缺失回退旧竖条（下方旧代码原样保留）。
+   * 绿窗由 game.js 传入新窗口语义 [0.66,0.99]（顶端向下 1/3 区段），竖条按 1-x 映射到屏幕。 */
   function setMeterDisturb(level) {
     S.meterDisturb = (typeof level === 'number' && isFinite(level)) ? Math.max(0, Math.min(1, level)) : 0;
+  }
+  /* v1.7 B1：game.js 在投篮/扣篮 meter 更新处每帧注入世界锚点（球员 pos + 1.3m）；
+   * 传 null/非法值 → 清锚点 → 下一帧 showMeter 自动回退旧竖条 */
+  function setMeterAnchor(wp) {
+    var a = S.meterAnchor;
+    if (wp && typeof wp.x === 'number' && typeof wp.y === 'number' && typeof wp.z === 'number' &&
+        isFinite(wp.x) && isFinite(wp.y) && isFinite(wp.z)) {
+      a.x = wp.x; a.y = wp.y; a.z = wp.z; a.has = true;
+    } else {
+      a.has = false;
+    }
+  }
+  /* 世界锚点 → 屏幕像素；_camera/THREE/锚点任一缺失或投影非法（在相机身后）→ null */
+  var _projV = null;
+  function projectAnchor() {
+    var a = S.meterAnchor;
+    if (!a.has || !UI._camera) return null;
+    if (typeof THREE === 'undefined' || !THREE.Vector3) return null;
+    try {
+      if (!_projV) _projV = new THREE.Vector3();
+      var v = _projV.set(a.x, a.y, a.z).project(UI._camera);
+      if (!isFinite(v.x) || !isFinite(v.y) || !isFinite(v.z) || v.z >= 1) return null;
+      var w = root.innerWidth || 1280, h = root.innerHeight || 720;
+      return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, w: w, h: h };
+    } catch (e) { return null; }
+  }
+  /* 弧渲染：绿窗弧段 / perfect 金线 / 前沿指针 / 干扰针色全部迁移自旧竖条 */
+  function renderArc(pct, lo, hi, scr) {
+    var box = els.arc;
+    if (!box) return false;
+    if (els.meter) els.meter.style.display = 'none';   /* 弧/竖条互斥 */
+    box.style.display = 'block';
+    /* 定位：本地圆心(30,70) 对齐「球员屏幕点右移 6px」→ 弧带中线≈球员右侧 70px；
+     * 屏幕边缘 clamp：整块 120×140 控件保持在屏内 */
+    var left = (scr.x + 6) - ARC.CX;
+    var top = scr.y - ARC.CY;
+    left = Math.min(Math.max(2, left), Math.max(2, scr.w - ARC.W - 2));
+    top = Math.min(Math.max(2, top), Math.max(2, scr.h - ARC.H - 2));
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    if (els.arcZone) {
+      if (hi > lo) {
+        els.arcZone.setAttribute('d', arcPath(lo, hi));
+        els.arcZone.setAttribute('visibility', 'visible');
+      } else {
+        els.arcZone.setAttribute('visibility', 'hidden');
+      }
+    }
+    var mid = (lo + hi) / 2;
+    setArcTick(els.arcPerfGlow, mid, ARC.R - 11, ARC.R + 11);
+    setArcTick(els.arcPerf, mid, ARC.R - 9, ARC.R + 9);
+    if (els.arcFill) {
+      els.arcFill.setAttribute('stroke', '#37b6ff');     /* 恢复默认（定格变色后） */
+      if (pct > 0.004) {
+        els.arcFill.setAttribute('d', arcPath(0, pct));
+        els.arcFill.setAttribute('visibility', 'visible');
+      } else {
+        els.arcFill.setAttribute('visibility', 'hidden');
+      }
+    }
+    setArcTick(els.arcPtrO, pct, ARC.R - 11, ARC.R + 11);
+    setArcTick(els.arcPtr, pct, ARC.R - 10, ARC.R + 10);
+    if (els.arcPtr) els.arcPtr.setAttribute('stroke', (S.meterDisturb > 0.2) ? '#ff7a5c' : '#fff');
+    return true;
   }
   function showMeter(pct, greenLo, greenHi) {
     S.meterVisible = true;
@@ -18591,8 +18829,13 @@ window.CANNON=module.exports;})();
     if (S.meterDisturb > 0.2) {
       pct = clamp01(pct + (Math.random() - 0.5) * S.meterDisturb * 0.09);
     }
-    if (!els.meter || S.meterFreeze > 0) return;   /* 定格期间不刷新 */
+    if (S.meterFreeze > 0) return;                 /* 定格期间不刷新（弧/竖条同理） */
     pct = clamp01(pct); greenLo = clamp01(greenLo); greenHi = clamp01(greenHi);
+    /* v1.7 B1：_camera + 锚点齐备 → 球员身旁弧形条；任一缺失 → 旧竖条 fallback */
+    var scr = els.arc ? projectAnchor() : null;
+    if (scr && renderArc(pct, greenLo, greenHi, scr)) return;
+    if (els.arc) els.arc.style.display = 'none';
+    if (!els.meter) return;
     els.meter.style.display = 'block';
     /* 绿窗：底=0 顶=1 → 屏幕 top = 1-greenHi（新判定窗 [0.66,0.99] 即渲染在顶端 1/3） */
     els.mzone.style.top = ((1 - greenHi) * 100) + '%';
@@ -18612,13 +18855,24 @@ window.CANNON=module.exports;})();
   function hideMeter() {
     S.meterDisturb = 0;
     S.meterVisible = false;
-    if (!els.meter || S.meterFreeze > 0) return;   /* 定格结束后自动隐藏 */
+    if (S.meterFreeze > 0) return;                 /* 定格结束后自动隐藏（含弧条） */
+    S.meterAnchor.has = false;                     /* v1.7 B1 锚点随条清除，下一轮由 game 重新注入 */
+    if (els.arc) els.arc.style.display = 'none';
+    if (!els.meter) return;
     els.meter.style.display = 'none';
   }
   function freezeMeter(quality) {
-    if (!els.meter || els.meter.style.display === 'none') return;
+    /* v1.7 B1：定格变色作用于当前激活的渲染器（弧条 / 旧竖条），二者互斥 */
+    var arcOn = !!(els.arc && els.arc.style.display === 'block');
+    var barOn = !!(els.meter && els.meter.style.display !== 'none');
+    if (!arcOn && !barOn) return;
     S.meterFreeze = 0.4;                            /* 定格 0.4s 显示品质色（金/绿/黄/红） */
     var c = QCOLOR[quality] || '#fff';
+    if (arcOn) {
+      if (els.arcFill) els.arcFill.setAttribute('stroke', c);
+      if (els.arcPtr) els.arcPtr.setAttribute('stroke', c);
+      return;
+    }
     els.mptr.style.background = c;
     els.mptr.style.boxShadow = '0 0 10px ' + c;
     if (els.mfill) {
@@ -18726,6 +18980,7 @@ window.CANNON=module.exports;})();
     hide(els.hud); hide(els.pause);
     if (els.post) els.post.style.display = 'none';
     if (els.meter) { els.meter.style.display = 'none'; S.meterFreeze = 0; S.meterVisible = false; }
+    if (els.arc) { els.arc.style.display = 'none'; S.meterAnchor.has = false; }   /* v1.7 B1 */
     var stats = d.stats || (st && st.stats) || {};
     var sc = (st && st.score) || [0, 0];
     var win = d.winner === 0;
@@ -18824,12 +19079,18 @@ window.CANNON=module.exports;})();
     }
     if (S.meterFreeze > 0) {
       S.meterFreeze -= dt;
-      if (S.meterFreeze <= 0) {                     /* 定格结束，收起投篮条 */
+      if (S.meterFreeze <= 0) {                     /* 定格结束，收起投篮条/弧条 */
         S.meterFreeze = 0;
         S.meterVisible = false;
+        S.meterAnchor.has = false;
         els.mptr.style.boxShadow = 'none';
         if (els.mfill) { els.mfill.style.background = ''; els.mfill.style.boxShadow = ''; }
         els.meter.style.display = 'none';
+        if (els.arc) {
+          els.arc.style.display = 'none';
+          if (els.arcFill) els.arcFill.setAttribute('stroke', '#37b6ff');
+          if (els.arcPtr) els.arcPtr.setAttribute('stroke', '#fff');
+        }
       }
     }
     stepBanner(dt);
@@ -18855,6 +19116,7 @@ window.CANNON=module.exports;})();
     update: update,
     showMeter: showMeter,
     hideMeter: hideMeter,
+    setMeterAnchor: setMeterAnchor,   /* v1.7 B1 弧条世界锚点（game.js 每帧注入） */
     setMeterDisturb: setMeterDisturb,
     banner: banner,
     popup: popup
@@ -19644,6 +19906,7 @@ window.CANNON=module.exports;})();
   };
   var COMBO_BONUS = 0.25;     /* 1.2s 内接不同花式 */
   var COMBO_WINDOW = 1.2;
+  var SKILL_CD = 0.4;         /* v1.7 B2 全部花式（cross/btb/legs/spin/hesi/stepback/dream/post_spin）共享冷却，防帧刷 */
   var REVERSE_BONUS = 0.20;   /* 防守人反向移动中 */
   var FALL_TH = 0.55;         /* 概率≥0.55 → 摔倒 */
   var STUMBLE_TH = 0.25;      /* 概率≥0.25 → 踉跄 */
@@ -20099,7 +20362,7 @@ window.CANNON=module.exports;})();
       stumbledUntil: 0, fallDur: 1.8,
       /* 花式 */
       skillName: '', skillDur: 0.6, skillSwitchT: 0.5, switched: false,
-      lastSkill: '', lastSkillTime: -99, dribbleHand: 'R',
+      lastSkill: '', lastSkillTime: -99, skillCdUntil: 0, dribbleHand: 'R',   /* v1.7 B2 花式冷却 */
       /* 投篮 */
       meterT: 0, released: false, ballGone: false, clipReleased: false,
       relPct: 0, greenLo: 0.7, greenHi: 0.95,
@@ -20446,6 +20709,9 @@ window.CANNON=module.exports;})();
       physSyncBall(); /* v1.6 */
     }
   }
+  /* v1.7 B2：花式冷却统一闸——玩家/AI 走同一 updateNormal 派发路径，此处一处拦截即覆盖双方；
+   * 冷却中输入直接忽略（不排队），连招窗口 1.2s（judgeAnkle 内 COMBO_WINDOW）逻辑不变 */
+  function skillReady (p) { return gtime >= (p.skillCdUntil || 0); }
   function startSkill (p, key) {
     var clipName = SKILL_CLIP[key];
     if (key === 'dream') clipName = sigClip(p, 'shake', clipName);
@@ -20467,6 +20733,7 @@ window.CANNON=module.exports;})();
     if (def && G.phase === 'play' && pdist(p, def) < ANKLE_RANGE) judgeAnkle(p, def, key);
     p.lastSkill = key;
     p.lastSkillTime = gtime;
+    p.skillCdUntil = gtime + SKILL_CD;   /* v1.7 B2 */
   }
   function startFake (p) {
     /* 假投：播 shoot 前 0.25s 后取消 */
@@ -20606,6 +20873,7 @@ window.CANNON=module.exports;})();
     }
     p.lastSkill = 'spin';
     p.lastSkillTime = gtime;
+    p.skillCdUntil = gtime + SKILL_CD;   /* v1.7 B2 背转身同享花式冷却 */
   }
 
   /* ---------- 防守：抢断 / 封盖 / 干扰 ---------- */
@@ -20936,6 +21204,8 @@ window.CANNON=module.exports;})();
       p.meterT += dt / METER_TIME;
       if (p.idx === 0 && BB.UI && BB.UI.showMeter) {
         try {
+          /* v1.7 B1 弧形条锚点：球员身旁（pos + 1.3m），UI 投影到屏幕、缺失自动回退旧竖条 */
+          if (BB.UI.setMeterAnchor) BB.UI.setMeterAnchor({ x: p.pos.x, y: p.pos.y + 1.3, z: p.pos.z });
           if (BB.UI.setMeterDisturb) BB.UI.setMeterDisturb((G.shotMode === 'standard' && !p.hook && !p.layup) ? contestOf(p) : 0);
           BB.UI.showMeter(clamp(p.meterT, 0, 1), p.greenLo, p.greenHi);
         } catch (e) {}
@@ -21136,6 +21406,8 @@ window.CANNON=module.exports;})();
         }
         if (BB.UI && BB.UI.showMeter) {
           try {
+            /* v1.7 B1 扣篮弧条跟随扣将（飞行中 pos.y 抬升，弧条随人走，不再遮挡中央动作） */
+            if (BB.UI.setMeterAnchor) BB.UI.setMeterAnchor({ x: p.pos.x, y: p.pos.y + 1.3, z: p.pos.z });
             BB.UI.showMeter(p.dunkMeterLock >= 0 ? p.dunkMeterLock : p.dunkMeterVal,
               DUNK_GREEN_LO, DUNK_GREEN_HI);
           } catch (e) {}
@@ -21690,10 +21962,10 @@ window.CANNON=module.exports;})();
       if (p.postUp) {
         /* 背打键位变形：J=虚幻转身 K/空格=后仰 L=勾手(<4m) U=背转身 */
         var fadePressed = (ct.shootHold && !p.prevHold) || ct.btb;
-        if (ct.cross) { startDreamShake(p); return; }
+        if (ct.cross && skillReady(p)) { startDreamShake(p); return; }   /* v1.7 B2 冷却中忽略 */
         if (fadePressed) { startFadeaway(p); return; }
         if (ct.legs && distToRim(p) < HOOK_RANGE) { startHook(p); return; }
-        if (ct.spin) { startPostSpin(p); return; }
+        if (ct.spin && skillReady(p)) { startPostSpin(p); return; }      /* v1.7 B2 冷却中忽略 */
         applyPostMovement(p, dt, ct);
         return;
       }
@@ -21723,7 +21995,7 @@ window.CANNON=module.exports;})();
         : ct.spin ? 'spin'
         : ct.hesi ? 'hesi'
         : ct.stepback ? 'stepback' : null;
-      if (sk) { startSkill(p, sk); return; }
+      if (sk && skillReady(p)) { startSkill(p, sk); return; }   /* v1.7 B2 共享 0.4s 冷却（玩家/AI 同闸） */
     }
     if (live && !p.hasBall && gtime >= p.stumbledUntil) {
       if (ct.steal) { trySteal(p); if (p.state !== 'normal') return; }

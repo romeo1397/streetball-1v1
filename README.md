@@ -33,4 +33,6 @@ A free 3D streetball basketball web game — halfcourt 1v1 against AI, with 2K-s
 
 Three.js r128 · 单 HTML 文件（~940KB 内嵌引擎）· 程序化骨骼动画系统 · 无构建依赖，克隆后双击 `index.html` 即玩。
 
+运球动作基于 CMU Graphics Lab Motion Capture Database 真人动捕数据重定向烘焙（free for all uses）。
+
 Made with Claude (Cowork).
