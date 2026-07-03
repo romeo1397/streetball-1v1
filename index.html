@@ -4027,7 +4027,12 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
  *           banner(main,sub,style), popup(text,worldPos), _camera:null }
  * gameApi = { start(opts), restart(), pause(), resume(), getState() }
  * 主菜单 / HUD / 投篮条 / 横幅队列 / 世界坐标飘字 / 暂停菜单 / 结算屏。
- * 一次性注入 <style>，系统字体，零外部资源。所有 DOM 守卫 typeof document。
+ * v1.5 B：英雄式全屏选人屏（上半 3D 预览自建 WebGLRenderer + AnimCtrl idle 自转，
+ *   THREE/WebGL 不可用时降级纯色剪影；中部名字/称号/年代徽章；下半 9 条数值条渐变生长；
+ *   顶部我方/对手 Tab + 左右箭头 + 底部头像格(hidden 卡过滤) + 确认/返回；
+ *   主菜单只留「选择球员」入口 + 「XX vs XX」对位展示）。
+ * 对 BB.ROSTER 新字段 era/reb/bulk/hidden 全部防御式兼容（旧 6 人卡缺字段不炸）。
+ * 一次性注入 <style>，系统字体，零外部资源。所有 DOM/THREE 守卫 typeof。
  */
 (function () {
   var root = (typeof window !== 'undefined') ? window :
@@ -4040,7 +4045,9 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
   var S = {
     playing: false, paused: false,
     diff: 'pro', target: 11,
-    shotMode: 'standard', rosterMe: 'ace', rosterAI: 'random',   /* v1.4 */
+    shotMode: 'standard',
+    rosterMe: 'mj', rosterAI: 'king', /* v1.5 默认 mj vs king（旧 6 人库时 ensureDefaults 自动回退） */
+    selOpen: false,                   /* v1.5 选人屏是否打开 */
     mode: 'match',                    /* v1.2 C3 'match'|'train' */
     hudT: 0,
     meterFreeze: 0, meterVisible: false,
@@ -4050,6 +4057,22 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
   var QCOLOR = { perfect: '#ffd700', good: '#2ed573', ok: '#ffc107', bad: '#ff4030' };
   var DIFFS = [['rookie', '新手'], ['pro', '普通'], ['allstar', '明星'], ['hof', '名人堂']];
   var BN_DUR = { ankle: 1.7, poster: 2.0, gold: 1.5, small: 1.0, gray: 1.3, norm: 1.3, miss: 1.4, chase: 1.8 };
+
+  /* ---------- v1.5 B 选人屏常量/状态 ---------- */
+  var STAT_DEF = [
+    ['spd', '速度'], ['three', '三分'], ['mid', '中投'], ['layup', '上篮'], ['dunk', '扣篮'],
+    ['steal', '抢断'], ['block', '盖帽'], ['fancy', '花式'], ['reb', '篮板']
+  ];
+  var ERA_COLOR = {                                  /* 年代徽章底色 */
+    '1980s': '#7a4dbf', '1990s': '#c0392b', '2000s': '#1f6fd6',
+    '2010s': '#0f9d58', '现代': '#e67e22'
+  };
+  var SEL = { tab: 'me', me: null, ai: null };       /* 选人屏内待确认的选择 */
+  var P3 = {                                         /* 3D 预览（自建小渲染器） */
+    tried: false, ok: false,
+    renderer: null, scene: null, camera: null,
+    ch: null, anim: null
+  };
 
   /* ---------- 样式（一次性注入） ---------- */
   var FONT = "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Heiti SC',sans-serif";
@@ -4072,7 +4095,6 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     '.bb-btn:active{transform:skewX(-8deg) translateY(1px);box-shadow:2px 2px 0 #14100a;}',
     '.bb-btn.big{font-size:30px;padding:14px 54px;background:linear-gradient(#ffd234,#ff8a1e);}',
     '.bb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}',
-    '.bb-roster-tip{margin:6px 0 2px;font-size:12px;color:#9fb3d9;letter-spacing:.06em;}',
     '#bb-score em{font-style:normal;font-size:15px;color:#ffd25e;margin:0 6px;}',
     '.bb-lab{font-weight:800;color:#ffd25e;font-size:16px;letter-spacing:.25em;text-shadow:1px 2px 0 #000;margin-right:4px;}',
     '.bb-opt{pointer-events:auto;cursor:pointer;font-weight:700;font-style:italic;font-size:15px;color:#c8d4e4;',
@@ -4168,7 +4190,71 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     '#bb-stats{display:flex;flex-direction:column;gap:6px;background:rgba(10,14,22,.85);border:2px solid #3a4356;',
     'border-radius:8px;padding:14px 30px;min-width:300px;margin:8px 0;}',
     '#bb-stats .r{display:flex;justify-content:space-between;gap:40px;font-size:19px;color:#c8d4e4;}',
-    '#bb-stats .r b{color:#ffd25e;font-style:italic;}'
+    '#bb-stats .r b{color:#ffd25e;font-style:italic;}',
+    /* ---------- v1.5 B 英雄式选人屏 ---------- */
+    '#bb-select{background:linear-gradient(160deg,#12161f 0%,#1d2433 55%,#2a1a10 100%);display:none;',
+    'flex-direction:column;align-items:center;justify-content:flex-start;overflow:auto;gap:4px;}',
+    '#bb-select:before{content:"";position:absolute;inset:0;pointer-events:none;',
+    'background:repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 22px,transparent 22px 66px);}',
+    '#bb-sel-tabs{position:relative;display:flex;gap:12px;justify-content:center;margin:14px 0 2px;z-index:2;}',
+    '.bb-tab{pointer-events:auto;cursor:pointer;font-weight:900;font-style:italic;font-size:19px;color:#8fa3bd;',
+    'border:2px solid #3a4356;border-radius:6px;padding:6px 30px;transform:skewX(-8deg);',
+    'background:rgba(10,14,22,.6);letter-spacing:.25em;transition:all .1s;}',
+    '.bb-tab:hover{color:#fff;border-color:#8fa3bd;}',
+    '.bb-tab.sel{color:#14100a;background:linear-gradient(#ffe259,#ffab24);border-color:#14100a;box-shadow:3px 3px 0 #14100a;}',
+    '#bb-sel-back{position:absolute;top:14px;right:18px;z-index:3;font-size:16px;padding:6px 22px;margin:0;}',
+    '#bb-sel-stage{position:relative;width:100%;height:40vh;min-height:200px;flex:none;z-index:1;}',
+    '#bb-sel-stage canvas{position:absolute;left:0;top:0;}',
+    '.bb-arrow{position:absolute;top:50%;transform:translateY(-50%) skewX(-8deg);z-index:3;cursor:pointer;pointer-events:auto;',
+    'font-size:60px;font-weight:900;font-style:italic;line-height:1;color:#ffd25e;-webkit-text-stroke:2px #14100a;',
+    'text-shadow:3px 4px 0 rgba(0,0,0,.5);transition:transform .08s;}',
+    '.bb-arrow:hover{transform:translateY(-50%) skewX(-8deg) scale(1.18);color:#ffe259;}',
+    '#bb-arrow-l{left:6vw;}#bb-arrow-r{right:6vw;}',
+    /* 3D 不可用时的纯色剪影降级 */
+    '.bb-sil{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;',
+    'align-items:center;opacity:.92;filter:drop-shadow(0 10px 16px rgba(0,0,0,.5));pointer-events:none;}',
+    '.bb-sil .h{width:52px;height:52px;border-radius:50%;}',
+    '.bb-sil .t{width:100px;height:104px;border-radius:24px 24px 10px 10px;margin-top:4px;}',
+    '.bb-sil .g{width:86px;height:96px;margin-top:2px;}',
+    '.bb-sil .q{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%) skewX(-8deg);font-size:88px;',
+    'font-weight:900;font-style:italic;color:#ffd25e;-webkit-text-stroke:2px #14100a;text-shadow:3px 4px 0 rgba(0,0,0,.5);}',
+    '.bb-sel-info{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;}',
+    '#bb-sel-name{font-size:min(7vw,52px);line-height:1.1;font-style:italic;font-weight:900;letter-spacing:.05em;',
+    'background:linear-gradient(#ffe259,#ff7a18);-webkit-background-clip:text;background-clip:text;color:#ffb020;',
+    '-webkit-text-fill-color:transparent;-webkit-text-stroke:2px #14100a;',
+    'filter:drop-shadow(3px 4px 0 rgba(0,0,0,.5));transform:skewX(-6deg);}',
+    '.bb-sel-sub{display:flex;align-items:center;gap:14px;justify-content:center;margin:2px 0 4px;}',
+    '#bb-sel-title{font-size:17px;font-weight:800;font-style:italic;letter-spacing:.3em;color:#c8d4e4;text-shadow:1px 2px 0 #000;}',
+    '.bb-era{display:inline-block;padding:2px 14px;border:2px solid #14100a;border-radius:4px;transform:skewX(-8deg);',
+    'font-weight:900;font-style:italic;font-size:14px;letter-spacing:.15em;color:#fff;',
+    'text-shadow:1px 1px 0 rgba(0,0,0,.5);box-shadow:2px 2px 0 #14100a;background:#5d6b80;}',
+    /* 9 条数值条：条长=数值%，低灰→高金渐变，宽度过渡=生长动画，不显示数字 */
+    '#bb-sel-bars{position:relative;z-index:2;width:min(540px,88vw);display:flex;flex-direction:column;gap:5px;margin:2px auto 4px;}',
+    '.bb-bar{display:flex;align-items:center;gap:10px;}',
+    '.bb-bar .lb{width:40px;flex:none;font-size:13px;font-weight:800;font-style:italic;color:#c8d4e4;text-align:right;',
+    'letter-spacing:.1em;text-shadow:1px 1px 0 #000;}',
+    '.bb-bar .tr{flex:1;height:13px;background:rgba(8,10,14,.66);border:2px solid #14100a;border-radius:8px;',
+    'overflow:hidden;box-shadow:inset 0 0 6px rgba(0,0,0,.55);}',
+    '.bb-bar .fl{height:100%;width:0;border-radius:5px;transition:width .55s cubic-bezier(.25,.9,.3,1);}',
+    /* 底部头像小格（hidden 卡不渲染；对手 Tab 多一个「随机」大格） */
+    '#bb-sel-grid{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;',
+    'max-width:660px;margin:2px auto;}',
+    '.bb-cell{pointer-events:auto;cursor:pointer;width:42px;height:42px;border:2px solid #3a4356;border-radius:6px;',
+    'display:flex;align-items:center;justify-content:center;font-weight:900;font-style:italic;font-size:15px;',
+    'text-shadow:1px 1px 0 rgba(0,0,0,.35);transition:all .1s;box-shadow:2px 2px 0 rgba(0,0,0,.4);}',
+    '.bb-cell:hover{transform:translateY(-2px);border-color:#8fa3bd;}',
+    '.bb-cell.sel{border-color:#ffd234;box-shadow:0 0 10px rgba(255,210,52,.8),2px 2px 0 #14100a;',
+    'transform:translateY(-2px) scale(1.1);}',
+    '.bb-cell.rand{width:auto;padding:0 16px;font-size:14px;letter-spacing:.2em;color:#fff;',
+    'background:linear-gradient(#39e57f,#0f9d58);border-color:#14100a;}',
+    '.bb-sel-cfm{position:relative;margin:6px 0 16px;z-index:2;}',
+    /* 主菜单当前对位展示 */
+    '#bb-duel{display:flex;align-items:center;gap:12px;pointer-events:auto;cursor:pointer;margin-top:2px;}',
+    '#bb-duel .dn{font-size:24px;font-weight:900;font-style:italic;letter-spacing:.04em;',
+    'background:linear-gradient(#ffe259,#ff7a18);-webkit-background-clip:text;background-clip:text;color:#ffb020;',
+    '-webkit-text-fill-color:transparent;-webkit-text-stroke:1.5px #14100a;',
+    'filter:drop-shadow(2px 3px 0 rgba(0,0,0,.5));transform:skewX(-6deg);}',
+    '#bb-duel .dv{font-size:14px;font-weight:900;color:#8fa3bd;letter-spacing:.25em;text-shadow:1px 1px 0 #000;}'
   ].join('');
 
   var KEYS_HTML =
@@ -4216,7 +4302,7 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     document.head.appendChild(st);
     els.root = mk('div', '', document.body);
     els.root.id = 'bb-ui';
-    buildMenu(); buildHud(); buildMeter(); buildBanner(); buildPops(); buildPause(); buildResult();
+    buildMenu(); buildSelect(); buildHud(); buildMeter(); buildBanner(); buildPops(); buildPause(); buildResult();
   }
 
   function optRow(parent, label, items, get, set) {
@@ -4248,27 +4334,14 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     /* v1.4 B1 投篮判定双模式 */
     optRow(box, '投篮判定', [['standard', '标准(2K式)'], ['casual', '娱乐']],
       function () { return S.shotMode; }, function (v) { S.shotMode = v; });
-    /* v1.4 B2 选球员（BB.ROSTER 防御式） */
-    if (BB.ROSTER && BB.ROSTER.length) {
-      var meItems = [], aiItems = [['random', '随机']];
-      BB.ROSTER.forEach(function (c) {
-        meItems.push([c.id, c.name]);
-        aiItems.push([c.id, c.name]);
-      });
-      optRow(box, '我的球员', meItems, function () { return S.rosterMe; }, function (v) { S.rosterMe = v; });
-      optRow(box, '对手球员', aiItems, function () { return S.rosterAI; }, function (v) { S.rosterAI = v; });
-      var tip = mk('div', 'bb-roster-tip', box, '');
-      function rosterTip() {
-        var c = null;
-        BB.ROSTER.forEach(function (x) { if (x.id === S.rosterMe) c = x; });
-        if (!c) { tip.textContent = ''; return; }
-        var st = c.stats || {};
-        tip.textContent = c.name + '·' + c.title + '  速度' + st.spd + ' 三分' + st.three +
-          ' 中投' + st.mid + ' 扣篮' + st.dunk + ' 抢断' + st.steal + ' 盖帽' + st.block + ' 花式' + st.fancy;
-      }
-      rosterTip();
-      box.addEventListener('click', rosterTip);
-    }
+    /* v1.5 B 选人入口 + 当前对位展示（替换旧 optRow 两行选人） */
+    els.duel = mk('div', '', box);
+    els.duel.id = 'bb-duel';
+    els.duel.onclick = function () { sfx('click'); openSelect(); };
+    var selBtn = mk('div', 'bb-btn', box, '选择球员');
+    selBtn.id = 'bb-btn-select';
+    selBtn.onclick = function () { sfx('click'); openSelect(); };
+    updateDuel();
     var row = mk('div', 'bb-row', box);
     var start = mk('div', 'bb-btn big', row, '开 始 比 赛');
     start.onclick = function () {
@@ -4395,6 +4468,365 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     };
   }
 
+  /* ================================================================
+   * v1.5 B 英雄式选人屏
+   * ================================================================ */
+
+  /* ---------- 小工具（全部防御式） ---------- */
+  function numOr(v, d) { return (typeof v === 'number' && isFinite(v)) ? v : d; }
+  function clampN(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function cssColor(n, fb) {
+    if (typeof n === 'number' && isFinite(n)) {
+      var s = (n >>> 0 & 0xffffff).toString(16);
+      while (s.length < 6) s = '0' + s;
+      return '#' + s;
+    }
+    return fb || '#5d6b80';
+  }
+  function lerpColor(a, b, t) {
+    t = clamp01(t);
+    var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+    var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+    return (Math.round(ar + (br - ar) * t) << 16) |
+           (Math.round(ag + (bg - ag) * t) << 8) |
+           Math.round(ab + (bb - ab) * t);
+  }
+  function lumOf(n) {
+    if (typeof n !== 'number' || !isFinite(n)) return 0.3;
+    return (((n >> 16) & 255) * 0.299 + ((n >> 8) & 255) * 0.587 + (n & 255) * 0.114) / 255;
+  }
+
+  /* ---------- 名单读取：懒读 BB.ROSTER，hidden:true 过滤，旧 6 人卡兼容 ---------- */
+  function rosterList() {
+    var r = (BB.ROSTER && BB.ROSTER.length) ? BB.ROSTER : [];
+    var out = [];
+    for (var i = 0; i < r.length; i++) { if (r[i] && !r[i].hidden) out.push(r[i]); }
+    return out;
+  }
+  function cardById(id) {
+    var l = rosterList();
+    for (var i = 0; i < l.length; i++) { if (l[i].id === id) return l[i]; }
+    return null;
+  }
+  function ensureDefaults() {
+    var l = rosterList();
+    if (!l.length) return;
+    if (!cardById(S.rosterMe)) {
+      S.rosterMe = cardById('mj') ? 'mj' : (cardById('ace') ? 'ace' : l[0].id);
+    }
+    if (S.rosterAI !== 'random' && !cardById(S.rosterAI)) {
+      S.rosterAI = cardById('king') ? 'king' : 'random';
+    }
+  }
+
+  /* ---------- 主菜单对位展示 ---------- */
+  function updateDuel() {
+    if (!els.duel) return;
+    ensureDefaults();
+    els.duel.innerHTML = '';
+    var meC = cardById(S.rosterMe);
+    mk('span', 'dn', els.duel).textContent = meC ? meC.name : '我方';
+    mk('span', 'dv', els.duel).textContent = 'VS';
+    var aiName = (S.rosterAI === 'random')
+      ? '随机对手'
+      : ((cardById(S.rosterAI) || {}).name || '对手');
+    mk('span', 'dn', els.duel).textContent = aiName;
+  }
+
+  /* ---------- 3D 预览：自建小型 WebGLRenderer（失败→剪影降级） ---------- */
+  function previewInit() {
+    if (P3.tried) return P3.ok;
+    P3.tried = true;
+    P3.ok = false;
+    if (!els.selStage) return false;
+    if (typeof THREE === 'undefined' || !THREE.WebGLRenderer || !THREE.Scene || !THREE.PerspectiveCamera) return false;
+    var r = null;
+    try {
+      r = new THREE.WebGLRenderer({ antialias: true, alpha: true });   /* 透明底 */
+      if (r.setPixelRatio) r.setPixelRatio(root.devicePixelRatio || 1);
+      if (r.setClearColor) r.setClearColor(0x000000, 0);
+      P3.scene = new THREE.Scene();
+      P3.camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 60);
+      P3.camera.position.set(0, 1.35, 4.1);
+      P3.camera.lookAt(new THREE.Vector3(0, 1.05, 0));
+      if (THREE.HemisphereLight) P3.scene.add(new THREE.HemisphereLight(0xfff6e6, 0x2c241a, 0.95));
+      if (THREE.DirectionalLight) {
+        var d = new THREE.DirectionalLight(0xfff1d0, 0.9);
+        d.position.set(2.4, 4.2, 3.2);
+        P3.scene.add(d);
+      }
+      els.selStage.appendChild(r.domElement);
+      P3.renderer = r;
+      P3.ok = true;
+    } catch (e) {
+      P3.ok = false; P3.renderer = null; P3.scene = null; P3.camera = null;
+      try { if (r && r.domElement && r.domElement.parentNode) r.domElement.parentNode.removeChild(r.domElement); } catch (e2) {}
+      if (typeof console !== 'undefined') console.warn('[BB.UI] 3D 预览不可用，降级纯色剪影:', e && e.message);
+    }
+    return P3.ok;
+  }
+  function previewResize() {
+    if (!P3.ok || !els.selStage) return;
+    var w = els.selStage.clientWidth || root.innerWidth || 960;
+    var h = els.selStage.clientHeight || Math.round((root.innerHeight || 720) * 0.4) || 300;
+    try {
+      P3.renderer.setSize(w, h);
+      P3.camera.aspect = w / Math.max(1, h);
+      P3.camera.updateProjectionMatrix();
+    } catch (e) {}
+  }
+  /* 切换球员时清理旧角色：scene.remove + 遍历 dispose geometry/material/map，防泄漏 */
+  function previewClearChar() {
+    if (!P3.ch) { P3.anim = null; return; }
+    var g = P3.ch.group;
+    try { if (P3.scene && g) P3.scene.remove(g); } catch (e) {}
+    try {
+      if (g && g.traverse) {
+        g.traverse(function (o) {
+          if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e1) {} }
+          var m = o.material;
+          if (!m) return;
+          var arr = Array.isArray(m) ? m : [m];
+          for (var i = 0; i < arr.length; i++) {
+            var mm = arr[i];
+            if (!mm) continue;
+            if (mm.map && mm.map.dispose) { try { mm.map.dispose(); } catch (e2) {} }
+            if (mm.dispose) { try { mm.dispose(); } catch (e3) {} }
+          }
+        });
+      }
+    } catch (e4) {}
+    P3.ch = null;
+    P3.anim = null;
+  }
+  /* card=null → 随机/空名单：灰色剪影 + '?'；否则 3D 模型（不可用时按球衣色剪影） */
+  function previewSetCard(card) {
+    var isSil = !card;
+    var jer = card ? cssColor(card.look && card.look.jersey, '#33415c') : '#3f4a5c';
+    var sho = card ? cssColor(card.look && card.look.shorts, '#242c3a') : '#333c4c';
+    var skn = card ? cssColor(card.look && card.look.skin, '#d99a6c') : '#55606f';
+    if (els.silH) els.silH.style.background = skn;
+    if (els.silT) els.silT.style.background = jer;
+    if (els.silG) els.silG.style.background =
+      'linear-gradient(90deg,' + sho + ' 0 40%,transparent 40% 60%,' + sho + ' 60% 100%)';
+    if (els.silQ) els.silQ.style.display = isSil ? 'block' : 'none';
+    var use3d = P3.ok && !isSil && typeof BB.createCharacter === 'function';
+    previewClearChar();
+    if (use3d) {
+      try {
+        var ch = BB.createCharacter(card.look || {});
+        if (!ch || !ch.group) throw new Error('createCharacter 未返回 group');
+        /* A 节字段：bulk 体型宽度 / hScale 身高，缺省=1 */
+        var bulk = clampN(numOr(card.bulk, 1), 0.8, 1.3);
+        var hs = clampN(numOr(card.hScale, 1), 0.85, 1.25);
+        ch.group.scale.set(bulk, hs, bulk);
+        ch.group.position.set(0, 0, 0);
+        ch.group.rotation.y = 0.5;
+        P3.scene.add(ch.group);
+        P3.ch = ch;
+        try {
+          if (BB.AnimCtrl) {
+            P3.anim = new BB.AnimCtrl(ch);
+            P3.anim.play('idle', { loop: true, force: true });
+          }
+        } catch (eA) { P3.anim = null; }
+      } catch (e) {
+        previewClearChar();
+        use3d = false;
+        if (typeof console !== 'undefined') console.warn('[BB.UI] 预览建模失败，降级剪影:', e && e.message);
+      }
+    }
+    if (P3.renderer && P3.renderer.domElement) P3.renderer.domElement.style.display = use3d ? '' : 'none';
+    if (els.sil) els.sil.style.display = use3d ? 'none' : 'flex';
+  }
+  /* 复用 BB.UI.update 驱动：idle 循环 + 缓慢自转 + 渲染 */
+  function stepPreview(dt) {
+    if (!S.selOpen || !P3.ok || !P3.renderer) return;
+    if (P3.ch && P3.ch.group) {
+      P3.ch.group.rotation.y += dt * 0.7;
+      if (P3.anim && P3.anim.update) { try { P3.anim.update(dt); } catch (e) {} }
+    }
+    try { P3.renderer.render(P3.scene, P3.camera); } catch (e) {}
+  }
+
+  /* ---------- 选人屏 DOM ---------- */
+  function buildSelect() {
+    var sc = els.select = mk('div', 'bb-screen', els.root);
+    sc.id = 'bb-select';
+    /* 顶部 Tab：我方/对手 + 右上返回 */
+    var tabs = mk('div', '', sc);
+    tabs.id = 'bb-sel-tabs';
+    els.tabMe = mk('span', 'bb-tab sel', tabs, '我方');
+    els.tabMe.id = 'bb-tab-me';
+    els.tabAI = mk('span', 'bb-tab', tabs, '对手');
+    els.tabAI.id = 'bb-tab-ai';
+    els.tabMe.onclick = function () { if (SEL.tab !== 'me') { SEL.tab = 'me'; sfx('click'); renderSelect(); } };
+    els.tabAI.onclick = function () { if (SEL.tab !== 'ai') { SEL.tab = 'ai'; sfx('click'); renderSelect(); } };
+    els.selBack = mk('div', 'bb-btn', sc, '返回');
+    els.selBack.id = 'bb-sel-back';
+    els.selBack.onclick = function () { sfx('click'); closeSelect(false); };
+    /* 上半 3D 预览台（含剪影降级与左右箭头） */
+    var st = els.selStage = mk('div', '', sc);
+    st.id = 'bb-sel-stage';
+    els.sil = mk('div', 'bb-sil', st);
+    els.silH = mk('div', 'h', els.sil);
+    els.silT = mk('div', 't', els.sil);
+    els.silG = mk('div', 'g', els.sil);
+    els.silQ = mk('div', 'q', els.sil, '?');
+    els.silQ.style.display = 'none';
+    els.arrowL = mk('div', 'bb-arrow', st, '◀');
+    els.arrowL.id = 'bb-arrow-l';
+    els.arrowR = mk('div', 'bb-arrow', st, '▶');
+    els.arrowR.id = 'bb-arrow-r';
+    els.arrowL.onclick = function () { stepPick(-1); };
+    els.arrowR.onclick = function () { stepPick(1); };
+    /* 中部：名字大字 + 称号 + 年代徽章 */
+    var info = mk('div', 'bb-sel-info', sc);
+    els.selName = mk('div', '', info, '');
+    els.selName.id = 'bb-sel-name';
+    var sub = mk('div', 'bb-sel-sub', info);
+    els.selTitle = mk('span', '', sub, '');
+    els.selTitle.id = 'bb-sel-title';
+    els.selEra = mk('span', 'bb-era', sub, '');
+    /* 下半：9 条数值条 */
+    var bars = mk('div', '', sc);
+    bars.id = 'bb-sel-bars';
+    els.bars = [];
+    STAT_DEF.forEach(function (d) {
+      var brow = mk('div', 'bb-bar', bars);
+      mk('span', 'lb', brow, d[1]);
+      var tr = mk('div', 'tr', brow);
+      var fl = mk('div', 'fl', tr);
+      els.bars.push({ key: d[0], fill: fl });
+    });
+    /* 底部头像小格 */
+    els.selGrid = mk('div', '', sc);
+    els.selGrid.id = 'bb-sel-grid';
+    /* 确认选择 */
+    var cf = mk('div', 'bb-sel-cfm', sc);
+    els.selConfirm = mk('div', 'bb-btn big', cf, '确认选择');
+    els.selConfirm.id = 'bb-sel-confirm';
+    els.selConfirm.onclick = function () { sfx('click'); closeSelect(true); };
+  }
+
+  /* ---------- 选人屏逻辑 ---------- */
+  function curPick() { return SEL.tab === 'ai' ? SEL.ai : SEL.me; }
+  function openSelect() {
+    if (!els.select) return;
+    ensureDefaults();
+    SEL.me = S.rosterMe;
+    SEL.ai = S.rosterAI;
+    SEL.tab = 'me';
+    S.selOpen = true;
+    hide(els.menu);
+    els.select.style.display = 'flex';
+    previewInit();
+    previewResize();
+    renderSelect();
+  }
+  function closeSelect(commit) {
+    if (commit) {
+      if (SEL.me) S.rosterMe = SEL.me;
+      if (SEL.ai) S.rosterAI = SEL.ai;
+    }
+    S.selOpen = false;
+    if (els.select) els.select.style.display = 'none';
+    if (els.menu && !S.playing) show(els.menu, 'flex');
+    updateDuel();
+  }
+  function stepPick(dir) {
+    var l = rosterList();
+    if (!l.length) return;
+    var ids = [], i;
+    if (SEL.tab === 'ai') ids.push('random');
+    for (i = 0; i < l.length; i++) ids.push(l[i].id);
+    var idx = ids.indexOf(curPick());
+    if (idx < 0) idx = 0;
+    idx = (idx + (dir > 0 ? 1 : -1) + ids.length) % ids.length;
+    if (SEL.tab === 'ai') SEL.ai = ids[idx]; else SEL.me = ids[idx];
+    sfx('click');
+    renderSelect();
+  }
+  function setInfo(name, title, era) {
+    if (els.selName) els.selName.textContent = name;
+    if (els.selTitle) els.selTitle.textContent = title;
+    if (els.selEra) {
+      els.selEra.textContent = era;
+      els.selEra.style.background = ERA_COLOR[era] || '#5d6b80';
+    }
+  }
+  /* stats=null → 随机/空名单：一律 50% 灰条 */
+  function renderBars(stats) {
+    if (!els.bars) return;
+    for (var i = 0; i < els.bars.length; i++) {
+      var b = els.bars[i], fl = b.fill;
+      var v = stats ? clampN(numOr(stats[b.key], 60), 1, 99) : 50;
+      var t = v / 100, c0, c1, glow;
+      if (!stats) { c0 = '#4a5260'; c1 = '#77808f'; glow = 'none'; }
+      else {
+        c0 = cssColor(lerpColor(0x4a5260, 0xff8a1e, t));
+        c1 = cssColor(lerpColor(0x7b8494, 0xffd234, t));
+        glow = t > 0.88 ? '0 0 9px rgba(255,210,60,.75)' : 'none';
+      }
+      fl.style.transition = 'none';                  /* 归零重触发生长动画 */
+      fl.style.width = '0%';
+      void fl.offsetWidth;
+      fl.style.transition = '';
+      fl.style.background = 'linear-gradient(90deg,' + c0 + ',' + c1 + ')';
+      fl.style.boxShadow = glow;
+      fl.style.width = v + '%';
+    }
+  }
+  function renderGrid() {
+    var g = els.selGrid;
+    if (!g) return;
+    g.innerHTML = '';
+    var cur = curPick(), l = rosterList();
+    if (SEL.tab === 'ai') {                          /* 对手 Tab 多一个「随机」大格 */
+      var rc = mk('div', 'bb-cell rand' + (cur === 'random' ? ' sel' : ''), g, '随机');
+      rc.title = '每局随机一位名宿';
+      rc.onclick = function () {
+        if (SEL.tab === 'ai') { SEL.ai = 'random'; sfx('click'); renderSelect(); }
+      };
+    }
+    l.forEach(function (c) {
+      var cell = mk('div', 'bb-cell' + (c.id === cur ? ' sel' : ''), g);
+      var jn = (c.look && typeof c.look.jersey === 'number') ? c.look.jersey : 0x33415c;
+      cell.style.background = cssColor(jn);
+      cell.style.color = lumOf(jn) > 0.62 ? '#14100a' : '#fff';
+      cell.textContent = (c.look && c.look.number !== undefined)
+        ? String(c.look.number)
+        : String(c.name || '?').charAt(0);
+      cell.title = (c.name || '') + (c.title ? (' · ' + c.title) : '');
+      cell.onclick = function () {
+        if (SEL.tab === 'ai') SEL.ai = c.id; else SEL.me = c.id;
+        sfx('click');
+        renderSelect();
+      };
+    });
+  }
+  function renderSelect() {
+    if (!els.select) return;
+    if (els.tabMe) els.tabMe.classList.toggle('sel', SEL.tab === 'me');
+    if (els.tabAI) els.tabAI.classList.toggle('sel', SEL.tab === 'ai');
+    var id = curPick();
+    var card = (id === 'random') ? null : (cardById(id) || rosterList()[0] || null);
+    if (id !== 'random' && card && card.id !== id) {   /* 指向的卡不存在 → 纠正到首张可见卡 */
+      if (SEL.tab === 'ai') SEL.ai = card.id; else SEL.me = card.id;
+    }
+    if (!card) {
+      var empty = (id !== 'random');
+      setInfo(empty ? '暂无球员' : '随机对手', empty ? 'ROSTER EMPTY' : '每局随机一位名宿', '???');
+      renderBars(null);
+      previewSetCard(null);
+    } else {
+      setInfo(card.name || '?', card.title || '', card.era || '街球');
+      renderBars(card.stats || {});
+      previewSetCard(card);
+    }
+    renderGrid();
+  }
+
   /* ---------- 暂停 ---------- */
   function setPause(on) {
     if (!S.playing) return;
@@ -4408,6 +4840,14 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     } catch (e) {}
   }
   function onKey(e) {
+    /* v1.5 选人屏快捷键：←→ 切换球员，Esc 返回，Enter 确认 */
+    if (S.selOpen) {
+      if (e.key === 'ArrowLeft') { stepPick(-1); return; }
+      if (e.key === 'ArrowRight') { stepPick(1); return; }
+      if (e.key === 'Escape') { closeSelect(false); return; }
+      if (e.key === 'Enter') { closeSelect(true); return; }
+      return;
+    }
     if (!S.playing) return;
     if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
       if (els.result && els.result.style.display === 'flex') return;
@@ -4661,8 +5101,8 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     });
     on('shotclock:low', function () { if (els.clock) els.clock.classList.add('low'); });
     on('game:start', function () {
-      S.playing = true; S.paused = false;
-      hide(els.menu); hide(els.result); hide(els.pause);
+      S.playing = true; S.paused = false; S.selOpen = false;
+      hide(els.menu); hide(els.select); hide(els.result); hide(els.pause);
       show(els.hud);
     });
     on('game:end', onGameEnd);
@@ -4692,6 +5132,7 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     }
     stepBanner(dt);
     stepPops(dt);
+    stepPreview(dt);   /* v1.5 选人屏 3D 预览（未打开/降级时内部自守卫直接返回） */
   }
 
   /* ---------- 对外 API ---------- */
@@ -4704,6 +5145,10 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
       inited = true;
       buildDom();
       document.addEventListener('keydown', onKey);
+      /* v1.5 选人屏打开期间跟随窗口缩放预览画布 */
+      if (typeof root.addEventListener === 'function') {
+        root.addEventListener('resize', function () { if (S.selOpen) previewResize(); });
+      }
     },
     update: update,
     showMeter: showMeter,
@@ -5279,30 +5724,33 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
 
   /* ================= 争球 / 篮板 ================= */
   function loose(brain, s, dt, ctrl) {
-    /* 全速冲预测落点 */
+    /* v1.5 C1 校准：球在 y<2.4 即可被空中抢到——不再跑 y≈0.2 的最终落点，
+     * 而是冲「下落穿过 y≈2.2 最早可拾高度」的截击点（球更低时直接贴球追），
+     * 与对手同点汇合后由 game.js 的 reboundWeight 争抢 roll 定胜负 */
     var tx = s.bx, tz = s.bz;
     var g = num(C().GRAV, 9.8);
-    if (s.by > 0.35 || Math.abs(s.bvy) > 0.5) {
-      /* 抛物线落到 y≈0.2 的时间（取正根） */
-      var b = s.bvy, c = s.by - 0.2;
+    if (s.by > 2.3) {
+      var b = s.bvy, c = Math.max(0.05, s.by - 2.2);
       var disc = b * b + 2 * g * c;
       var tl = disc > 0 ? (b + Math.sqrt(disc)) / g : 0.3;
-      tl = clamp(tl, 0, 1.2);
+      tl = clamp(tl, 0, 1.5);
       tx = s.bx + s.bvx * tl; tz = s.bz + s.bvz * tl;
     } else {
       tx = s.bx + s.bvx * 0.25; tz = s.bz + s.bvz * 0.25;
     }
-    var d = seek(brain, s, clampX(tx), clampZ(tz), 1);
-    ctrl.sprint = d > 0.6;
+    var d = seek(brain, s, clampX(tx), clampZ(tz), 1.5); /* 高增益：贴点不磨蹭 */
+    ctrl.sprint = d > 0.35;
   }
 
   function rebound(brain, s, dt, ctrl) {
-    /* 球在飞行：去篮下卡位准备篮板 */
+    /* 球在飞行：冲抢篮板落点。v1.5 C1 校准：紧贴弹出区中心（筐前 1.3m、微偏球侧）
+     * 卡位 —— 弹筐方向随机，站期望落区中心比赌某一侧期望距离最短；
+     * 出手后立刻全速压进，等 loose 再逐帧追截击点（见 loose()） */
     var side = s.bx >= s.rx ? 1 : -1;
     var d = seek(brain, s,
-      clampX(s.rx + side * 0.9 + brain.jx * 0.3),
-      clampZ(s.rz + 1.4), 0.9);
-    ctrl.sprint = d > 3;
+      clampX(s.rx + side * 0.5 + brain.jx * 0.2),
+      clampZ(s.rz + 1.3), 1.2);
+    ctrl.sprint = d > 1.0;
   }
 
   /* ================= update ================= */
@@ -5461,6 +5909,8 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
   var DUNK_METER_FILL = 0.9;  /* v1.2 C1 拉条走满 0.7→0.9s */
   var PICKUP_R = 0.95;        /* C4 拾球半径 */
   var PICKUP_MAXY = 2.4;      /* C4 空中抢板高度 */
+  var REB_CONTEST_R = 1.2;    /* v1.5 C1 篮板争抢判定半径（双方都在内 → 权重 roll） */
+  var STAND_DUNK_R = 2.2;     /* v1.5 C2 原地扣篮距离（Shift+空格，无需助跑） */
 
   /* v1.2 C2 盖帽/追帽（UPDATE2.md） */
   var BLOCK_P = 0.75;          /* 普通封盖成功率 0.5×1.5 */
@@ -5491,25 +5941,84 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
   };
 
   /* ---------- 纯数值函数（挂到 BB.Game._calc 供测试） ---------- */
-  /* ---------- v1.4 B2 球员名单（UI 读 BB.ROSTER 渲染选人界面） ---------- */
+  /* ---------- v1.5 C4 名宿球员库（UPDATE5.md A 节，制作人定稿原样嵌入）
+   * 新字段：era 年代 / stats.reb 篮板 / look.skin 肤色 / bulk 体型宽度（applyRoster 用）
+   * UI 读 BB.ROSTER 渲染选人界面（hidden:true 的兼容卡不显示） ---------- */
   var ROSTER = [
-    { id: 'flash',  name: '闪电',   title: '速度型',   stats: { spd: 95, three: 65, mid: 70, layup: 85, dunk: 75, steal: 80, block: 40, fancy: 90 },
+    { id: 'skyhook', name: '天勾·贾巴', title: '天勾',     era: '1980s',
+      stats: { spd: 62, three: 15, mid: 80, layup: 85, dunk: 88, steal: 45, block: 92, fancy: 55, reb: 95 },
+      look: { jersey: 0x552583, shorts: 0xFDB927, number: '33', hairStyle: 4, skin: 0x8a5638 }, hScale: 1.12, bulk: 1.04 },
+    { id: 'magic',   name: '魔术师',    title: '传奇控卫', era: '1980s',
+      stats: { spd: 82, three: 55, mid: 72, layup: 88, dunk: 70, steal: 80, block: 45, fancy: 92, reb: 80 },
+      look: { jersey: 0x552583, shorts: 0xFDB927, number: '32', hairStyle: 0, skin: 0x8a5638 }, hScale: 1.06, bulk: 1.02 },
+    { id: 'bird',    name: '大鸟·伯德', title: '神射前锋', era: '1980s',
+      stats: { spd: 68, three: 95, mid: 96, layup: 78, dunk: 55, steal: 75, block: 50, fancy: 70, reb: 85 },
+      look: { jersey: 0x007A33, shorts: 0xffffff, number: '33', hairStyle: 0, skin: 0xd99a6c }, hScale: 1.06, bulk: 1.03 },
+    { id: 'drj',     name: 'J博士',     title: '滑翔天尊', era: '1980s',
+      stats: { spd: 85, three: 45, mid: 75, layup: 90, dunk: 96, steal: 70, block: 55, fancy: 80, reb: 78 },
+      look: { jersey: 0xED174C, shorts: 0xffffff, number: '6',  hairStyle: 1, skin: 0x8a5638 }, hScale: 1.04, bulk: 1.0 },
+    { id: 'mj',      name: '飞人·MJ',   title: '篮球之神', era: '1990s',
+      stats: { spd: 92, three: 78, mid: 98, layup: 96, dunk: 97, steal: 95, block: 70, fancy: 90, reb: 75 },
+      look: { jersey: 0xCE1141, shorts: 0x000000, number: '23', hairStyle: 4, skin: 0x8a5638 }, hScale: 1.02, bulk: 1.0 },
+    { id: 'dream',   name: '大梦',      title: '梦幻脚步', era: '1990s',
+      stats: { spd: 70, three: 20, mid: 82, layup: 86, dunk: 85, steal: 85, block: 97, fancy: 96, reb: 93 },
+      look: { jersey: 0xCE1141, shorts: 0xffffff, number: '34', hairStyle: 4, skin: 0x8a5638 }, hScale: 1.08, bulk: 1.06 },
+    { id: 'shaq',    name: '大鲨鱼',    title: '禁区巨兽', era: '1990s',
+      stats: { spd: 55, three: 5,  mid: 40, layup: 85, dunk: 99, steal: 40, block: 90, fancy: 35, reb: 96 },
+      look: { jersey: 0x552583, shorts: 0xFDB927, number: '34', hairStyle: 4, skin: 0x8a5638 }, hScale: 1.12, bulk: 1.18 },
+    { id: 'glide',   name: '滑翔机',    title: '飞行家',   era: '1990s',
+      stats: { spd: 88, three: 70, mid: 80, layup: 90, dunk: 92, steal: 85, block: 60, fancy: 78, reb: 72 },
+      look: { jersey: 0xE03A3E, shorts: 0x000000, number: '22', hairStyle: 0, skin: 0x8a5638 }, hScale: 1.04, bulk: 1.0 },
+    { id: 'mamba',   name: '黑曼巴',    title: '凌波微步', era: '2000s',
+      stats: { spd: 88, three: 85, mid: 96, layup: 92, dunk: 90, steal: 88, block: 60, fancy: 92, reb: 70 },
+      look: { jersey: 0x552583, shorts: 0xFDB927, number: '24', hairStyle: 0, skin: 0x8a5638 }, hScale: 1.03, bulk: 0.99 },
+    { id: 'answer',  name: '答案·AI',   title: '麻花变向', era: '2000s',
+      stats: { spd: 98, three: 78, mid: 80, layup: 94, dunk: 60, steal: 92, block: 25, fancy: 99, reb: 50 },
+      look: { jersey: 0xffffff, shorts: 0xC8102E, number: '3',  hairStyle: 3, skin: 0x8a5638 }, hScale: 0.94, bulk: 0.92 },
+    { id: 'stone',   name: '石佛',      title: '打板宗师', era: '2000s',
+      stats: { spd: 62, three: 25, mid: 90, layup: 82, dunk: 78, steal: 65, block: 90, fancy: 60, reb: 94 },
+      look: { jersey: 0x000000, shorts: 0xC4CED4, number: '21', hairStyle: 4, skin: 0xc98e60 }, hScale: 1.08, bulk: 1.05 },
+    { id: 'king',    name: '小皇帝',    title: '战车',     era: '2010s',
+      stats: { spd: 92, three: 80, mid: 85, layup: 96, dunk: 96, steal: 82, block: 88, fancy: 82, reb: 85 },
+      look: { jersey: 0x860038, shorts: 0xFDBB30, number: '23', hairStyle: 0, skin: 0x8a5638 }, hScale: 1.05, bulk: 1.09 },
+    { id: 'chef',    name: '萌神·库里', title: '三分之神', era: '2010s',
+      stats: { spd: 90, three: 99, mid: 90, layup: 85, dunk: 45, steal: 78, block: 25, fancy: 95, reb: 40 },
+      look: { jersey: 0x1D428A, shorts: 0xFFC72C, number: '30', hairStyle: 0, skin: 0xc98e60 }, hScale: 0.98, bulk: 0.94 },
+    { id: 'reaper',  name: '死神·KD',   title: '冷面杀手', era: '2010s',
+      stats: { spd: 85, three: 92, mid: 98, layup: 88, dunk: 88, steal: 70, block: 75, fancy: 78, reb: 70 },
+      look: { jersey: 0x007AC1, shorts: 0xEF3B24, number: '35', hairStyle: 1, skin: 0x8a5638 }, hScale: 1.09, bulk: 0.96 },
+    { id: 'greek',   name: '字母哥',    title: '希腊怪兽', era: '现代',
+      stats: { spd: 94, three: 40, mid: 55, layup: 95, dunk: 98, steal: 75, block: 90, fancy: 70, reb: 90 },
+      look: { jersey: 0x00471B, shorts: 0xEEE1C6, number: '34', hairStyle: 3, skin: 0x8a5638 }, hScale: 1.09, bulk: 1.06 },
+    { id: 'joker',   name: '约老师',    title: '组织中锋', era: '现代',
+      stats: { spd: 58, three: 72, mid: 88, layup: 85, dunk: 62, steal: 70, block: 65, fancy: 88, reb: 97 },
+      look: { jersey: 0x0E2240, shorts: 0xFEC524, number: '15', hairStyle: 0, skin: 0xd99a6c }, hScale: 1.10, bulk: 1.10 },
+    /* ---- v1.4 旧 6 人卡：仅作兼容保留（旧测试/旧存档 id），UI 过滤 hidden ---- */
+    { id: 'flash',  name: '闪电',   title: '速度型',   hidden: true, stats: { spd: 95, three: 65, mid: 70, layup: 85, dunk: 75, steal: 80, block: 40, fancy: 90 },
       look: { jersey: 0xffd93b, shorts: 0x2b2b2b, number: '11', hairStyle: 2 }, hScale: 0.97 },
-    { id: 'sniper', name: '神射',   title: '射手',     stats: { spd: 75, three: 95, mid: 90, layup: 70, dunk: 45, steal: 55, block: 35, fancy: 65 },
+    { id: 'sniper', name: '神射',   title: '射手',     hidden: true, stats: { spd: 75, three: 95, mid: 90, layup: 70, dunk: 45, steal: 55, block: 35, fancy: 65 },
       look: { jersey: 0x35c46f, shorts: 0x123524, number: '30', hairStyle: 0 }, hScale: 1.0 },
-    { id: 'slam',   name: '暴扣王', title: '扣将',     stats: { spd: 80, three: 40, mid: 55, layup: 80, dunk: 98, steal: 45, block: 70, fancy: 55 },
+    { id: 'slam',   name: '暴扣王', title: '扣将',     hidden: true, stats: { spd: 80, three: 40, mid: 55, layup: 80, dunk: 98, steal: 45, block: 70, fancy: 55 },
       look: { jersey: 0xd7263d, shorts: 0x1b1b22, number: '8',  hairStyle: 1 }, hScale: 1.03 },
-    { id: 'ace',    name: '全能王', title: '全能',     stats: { spd: 82, three: 80, mid: 82, layup: 82, dunk: 80, steal: 78, block: 62, fancy: 78 },
+    { id: 'ace',    name: '全能王', title: '全能',     hidden: true, stats: { spd: 82, three: 80, mid: 82, layup: 82, dunk: 80, steal: 78, block: 62, fancy: 78 },
       look: { jersey: 0xf4f6ff, shorts: 0x1d4fd7, number: '1',  hairStyle: 0 }, hScale: 1.0 },
-    { id: 'tower',  name: '巨塔',   title: '内线',     stats: { spd: 60, three: 25, mid: 60, layup: 80, dunk: 90, steal: 40, block: 95, fancy: 30 },
+    { id: 'tower',  name: '巨塔',   title: '内线',     hidden: true, stats: { spd: 60, three: 25, mid: 60, layup: 80, dunk: 90, steal: 40, block: 95, fancy: 30 },
       look: { jersey: 0x5a4fcf, shorts: 0x17142e, number: '55', hairStyle: 4 }, hScale: 1.06 },
-    { id: 'street', name: '街球手', title: '花式大师', stats: { spd: 82, three: 70, mid: 75, layup: 78, dunk: 70, steal: 65, block: 30, fancy: 99 },
+    { id: 'street', name: '街球手', title: '花式大师', hidden: true, stats: { spd: 82, three: 70, mid: 75, layup: 78, dunk: 70, steal: 65, block: 30, fancy: 99 },
       look: { jersey: 0xff8c1a, shorts: 0x232323, number: '23', hairStyle: 3 }, hScale: 0.98 }
   ];
   BB.ROSTER = ROSTER;
   function rosterById (id) {
-    for (var i = 0; i < ROSTER.length; i++) { if (ROSTER[i].id === id) return ROSTER[i]; }
-    return ROSTER[3]; /* 默认全能王 */
+    var i;
+    for (i = 0; i < ROSTER.length; i++) { if (ROSTER[i].id === id) return ROSTER[i]; }
+    for (i = 0; i < ROSTER.length; i++) { if (ROSTER[i].id === 'mj') return ROSTER[i]; } /* v1.5 默认 MJ */
+    return ROSTER[0];
+  }
+  function randomVisibleCard () {
+    var vis = [];
+    for (var i = 0; i < ROSTER.length; i++) { if (!ROSTER[i].hidden) vis.push(ROSTER[i]); }
+    if (!vis.length) vis = ROSTER;
+    return vis[Math.floor(Math.random() * vis.length)];
   }
 
   var _calc = {
@@ -5582,8 +6091,48 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
         dunkRange: g('dunk', 75) / 100 * 0.6,
         steal: 0.7 + g('steal', 75) / 100 * 0.6,
         block: 0.7 + g('block', 75) / 100 * 0.6,
-        fancy: 0.7 + g('fancy', 75) / 100 * 0.6
+        fancy: 0.7 + g('fancy', 75) / 100 * 0.6,
+        reb:   g('reb', 75)   /* v1.5 C1 篮板数值（1-99）参与争抢权重 */
       };
+    },
+    /* v1.5 C1 篮板争抢权重：reb 数值 + 位置优势（离落点近 30/m + 内侧卡位 +8）+ 随机(0~50)。
+     * dist ∈ [0,1.2]（争抢半径内）；inside=内侧卡位方——按篮球规则防守方站人筐之间，
+     * 天然占据内侧卡位（防守板整体略占优的真实规律来源）。
+     * 同距同位下 reb 差 20 约 8 成胜率（随机差为 ±50 三角分布）。 */
+    reboundWeight: function (reb, dist, inside, rnd) {
+      var r = (typeof reb === 'number' && isFinite(reb)) ? reb : 75;
+      var d = clamp((typeof dist === 'number' && isFinite(dist)) ? dist : 1.2, 0, 1.2);
+      var x = (typeof rnd === 'number' && isFinite(rnd)) ? rnd : Math.random();
+      return r + (1.2 - d) * 30 + (inside ? 8 : 0) + x * 50;
+    },
+    /* v1.5 C3 花式扣篮概率：任何距离 60%+；dunk≥90 球员 80%；隔扣 100% */
+    dunkFlashyChance: function (dunkStat, poster) {
+      if (poster) return 1;
+      var s = (typeof dunkStat === 'number' && isFinite(dunkStat)) ? dunkStat : 75;
+      return (s >= 90) ? 0.8 : 0.6;
+    },
+    /* v1.5 C3 扣篮选型：先 roll 花式池/基础池，再池内均匀抽（clip 缺失防御回退）。
+     * roll1/roll2 可注入测试；省略 = Math.random。 */
+    pickDunkStyle: function (dist, dunkStat, poster, roll1, roll2) {
+      var FLASHY = ['dunk_tomahawk', 'dunk_windmill', 'dunk_360', 'dunk_720',
+        'dunk_cradle', 'dunk_legs', 'dunk_reverse', 'dunk_elbow'];
+      var BASIC = ['dunk_one', 'dunk_two', 'dunk_double'];
+      var r1 = (typeof roll1 === 'number' && isFinite(roll1)) ? roll1 : Math.random();
+      var r2 = (typeof roll2 === 'number' && isFinite(roll2)) ? roll2 : Math.random();
+      var pool = (r1 < _calc.dunkFlashyChance(dunkStat, poster)) ? FLASHY : BASIC;
+      var avail = [], i;
+      for (i = 0; i < pool.length; i++) { if (BB.CLIPS && BB.CLIPS[pool[i]]) avail.push(pool[i]); }
+      if (!avail.length) {
+        var alt = (pool === FLASHY) ? BASIC : FLASHY;
+        for (i = 0; i < alt.length; i++) { if (BB.CLIPS && BB.CLIPS[alt[i]]) avail.push(alt[i]); }
+      }
+      if (!avail.length) avail = pool;
+      return avail[Math.min(avail.length - 1, Math.floor(clamp(r2, 0, 0.9999) * avail.length))];
+    },
+    /* 是否属于花式扣篮池（测试/统计用） */
+    isFlashyDunk: function (style) {
+      return ['dunk_tomahawk', 'dunk_windmill', 'dunk_360', 'dunk_720',
+        'dunk_cradle', 'dunk_legs', 'dunk_reverse', 'dunk_elbow', 'dunk_ft'].indexOf(style) >= 0;
     },
     /* 上篮命中率（较高） */
     layupChance: function (contest, diffMod) {
@@ -5876,7 +6425,9 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
       try { if (BB.AnimCtrl) anim = new BB.AnimCtrl(ch); } catch (e3) {}
       p.anim = anim || fallbackAnim();
       var hs = (typeof card.hScale === 'number' && isFinite(card.hScale)) ? clamp(card.hScale, 0.9, 1.12) : 1;
-      ch.group.scale.setScalar(hs);
+      /* v1.5 C4 体型宽度 bulk：横向 xz 缩放（clamp 0.9~1.2），身高走 hScale */
+      var bk = (typeof card.bulk === 'number' && isFinite(card.bulk)) ? clamp(card.bulk, 0.9, 1.2) : 1;
+      ch.group.scale.set(bk, hs, bk);
       if (G.scene) G.scene.add(ch.group);
       playClip(p, 'idle', { loop: true, force: true });
     }
@@ -6589,18 +7140,7 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     exitPost(p);
     var rim = G.rimV;
     var d = distToRim(p);
-    /* v1.3 A2 扣篮池 12 式按距离分池（clip 缺失防御：只在已有 clip 里随机）
-     * 新增：dunk_elbow 归近距池；dunk_legs/dunk_720 归远距滑翔池；dunk_ft 单独走远距小概率 */
-    var pool = (d < 2.6)
-      ? ['dunk_one', 'dunk_two', 'dunk_double', 'dunk_elbow']
-      : ['dunk_tomahawk', 'dunk_windmill', 'dunk_360', 'dunk_cradle', 'dunk_reverse', 'dunk_legs', 'dunk_720'];
-    var avail = [], pi;
-    for (pi = 0; pi < pool.length; pi++) {
-      if (BB.CLIPS && BB.CLIPS[pool[pi]]) avail.push(pool[pi]);
-    }
-    var style = choose(avail.length ? avail : pool);
-    /* v1.3 A2：dunk_ft 罚球线滑翔——仅远距(≥4m)「无限起飞」小概率(~12%)抽中（缺失跳过） */
-    if (d >= 4 && BB.CLIPS && BB.CLIPS.dunk_ft && Math.random() < 0.12) style = 'dunk_ft';
+    /* v1.5 C3：先判隔扣（poster 影响花式概率 100%），再选扣篮式样 */
     var def = G.players[other(p.idx)];
     var poster = false;
     if (def && def.state !== 'fall' && def.state !== 'getup' && def.state !== 'stumble') {
@@ -6628,6 +7168,13 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
         poster = true; /* 强制隔扣 */
       }
     }
+    /* v1.5 C3 扣篮选型：花式池任何距离 60%+（dunk≥90 → 80%，隔扣 → 100%），
+     * 否则基础池 dunk_one/two/double（原地扣/近扣普通池）。clip 缺失防御在 pickDunkStyle 内。 */
+    var dunkStat = (p.card && p.card.stats && typeof p.card.stats.dunk === 'number' && isFinite(p.card.stats.dunk))
+      ? p.card.stats.dunk : 75;
+    var style = _calc.pickDunkStyle(d, dunkStat, poster);
+    /* v1.3 A2：dunk_ft 罚球线滑翔——仅远距(≥4m)「无限起飞」小概率(~12%)抽中（缺失跳过，原逻辑不动） */
+    if (d >= 4 && BB.CLIPS && BB.CLIPS.dunk_ft && Math.random() < 0.12) style = 'dunk_ft';
     p.state = 'dunk';
     p.stateT = 0;
     p.dunkStyle = style;
@@ -6905,12 +7452,16 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
         b.vel.z *= 0.2;
         b.vel.y = Math.max(b.vel.y, -2.5);
       } else if (!s.willHit && dr < RIM_R + BALL_R + 0.06) {
-        /* 打铁弹筐 */
+        /* 打铁弹筐
+         * v1.5 C1 修复：旧逻辑水平速度大(≤~4m/s)且固定 +Z 外弹偏置(rand(0.3,1.2))，
+         * 篮板弹道系统性扫向外线=进攻方一侧，防守方(内侧)永远追着球屁股跑。
+         * 现改为：接触点方向为主、外弹偏置减小，水平速度整体压低 → 落点回到筐区附近，
+         * 内侧卡位的防守方有真实争抢机会（配合下方 reboundWeight roll）。 */
         s.resolved = true;
         emit('rim:hit', {});
         var ox = b.pos.x - rim.x, oz = b.pos.z - rim.z;
         var ol = Math.sqrt(ox * ox + oz * oz) || 1;
-        b.vel.set(ox / ol * rand(1.2, 2.8) + rand(-0.5, 0.5), rand(1.8, 3.4), oz / ol * rand(1.2, 2.8) + rand(0.3, 1.2));
+        b.vel.set(ox / ol * rand(0.8, 2.0) + rand(-0.5, 0.5), rand(1.8, 3.4), oz / ol * rand(0.8, 2.0) + rand(0.0, 0.6));
         b.state = 'loose';
         b.freeT = 0;
         b.shot = null;
@@ -6974,15 +7525,29 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
     if (b.pos.x > wx1) { b.pos.x = wx1; b.vel.x = -Math.abs(b.vel.x) * 0.5; }
     if (b.pos.z < wz0) { b.pos.z = wz0; b.vel.z = Math.abs(b.vel.z) * 0.5; }
     if (b.pos.z > wz1) { b.pos.z = wz1; b.vel.z = -Math.abs(b.vel.z) * 0.5; }
-    /* v1.1 C4：0.3s 后任一玩家 0.95m 内拾起；允许空中抢板（球 y<2.4） */
-    if (canPickup && b.freeT > 0.3 && G.phase === 'play') {
-      for (var i = 0; i < 2; i++) {
-        var p = G.players[i];
+    /* v1.1 C4：0.3s 后任一玩家 0.95m 内拾起；允许空中抢板（球 y<2.4）
+     * v1.5 C1：改「先到先得」为争抢判定——双方都在 1.2m 争抢圈内时按
+     * 权重 roll（reb 数值 + 离球近 + 内侧卡位 + 随机），胜者拾球；
+     * 只有一人到位则照旧 0.95m 直接拾。 */
+    if (canPickup && b.freeT > 0.3 && G.phase === 'play' && b.pos.y < PICKUP_MAXY) {
+      var elig = [null, null], dArr = [99, 99], i, p;
+      for (i = 0; i < 2; i++) {
+        p = G.players[i];
         if (!p) continue;
         if (p.state !== 'normal' && p.state !== 'skill') continue;
-        if (pdist(p, { pos: b.pos }) < PICKUP_R && b.pos.y < PICKUP_MAXY) {
-          pickupBall(p);
-          break;
+        elig[i] = p;
+        dArr[i] = pdist(p, { pos: b.pos });
+      }
+      if (elig[0] && elig[1] && dArr[0] < REB_CONTEST_R && dArr[1] < REB_CONTEST_R &&
+          Math.min(dArr[0], dArr[1]) < PICKUP_R) {
+        /* 内侧卡位 = 防守方（规则上站人筐之间，天然占内侧）——防守板略占优 */
+        var in0 = (elig[0].idx !== G.attacker);
+        var w0 = _calc.reboundWeight(elig[0].mods ? elig[0].mods.reb : 75, dArr[0], in0, Math.random());
+        var w1 = _calc.reboundWeight(elig[1].mods ? elig[1].mods.reb : 75, dArr[1], !in0, Math.random());
+        pickupBall(w0 >= w1 ? elig[0] : elig[1]);
+      } else {
+        for (i = 0; i < 2; i++) {
+          if (elig[i] && dArr[i] < PICKUP_R) { pickupBall(elig[i]); break; }
         }
       }
     }
@@ -7208,9 +7773,12 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
           var dR = distToRim(p);
           var toward = movingToward(p, G.rimV);
           var inPaint = Math.abs(p.pos.x - G.rimV.x) < PAINT_HALF_W && p.pos.z < PAINT_Z;
-          /* v1.1 C2 无限起飞：冲刺 + 油漆区 或 距筐 ≤5.5m 朝筐即可起扣 */
-          if (toward && ((dR < DUNK_RANGE && (ct.sprint || ct.dunk)) ||
-              (ct.sprint && (inPaint || dR <= DUNK_MAX + (p.mods ? p.mods.dunkRange : 0))))) { startDunk(p); return; }
+          /* v1.5 C2 原地扣篮（2K 式）：距筐 ≤2.2m 且 Shift 按住 + 空格即起扣，
+           * 速度可为 0、无需方向键；隔扣/拉条判定在 startDunk 内照常。 */
+          var standDunk = ct.sprint && dR <= STAND_DUNK_R;
+          /* v1.1 C2 无限起飞：冲刺 + 油漆区 或 距筐 ≤5.5m 朝筐即可起扣（原逻辑不动） */
+          if (standDunk || (toward && ((dR < DUNK_RANGE && (ct.sprint || ct.dunk)) ||
+              (ct.sprint && (inPaint || dR <= DUNK_MAX + (p.mods ? p.mods.dunkRange : 0)))))) { startDunk(p); return; }
           if (dR < LAYUP_RANGE && !ct.sprint) { startLayup(p); return; }
           startJumper(p);
           return;
@@ -7349,12 +7917,13 @@ window.addEventListener('error',function(e){var d=document.getElementById('bb-er
       G.trainT = 0;
       /* v1.4 B1 投篃判定模式：默认标准（2K 风吃干扰），'casual' = v1.3 娱乐手感 */
       G.shotMode = (opts.shotMode === 'casual') ? 'casual' : 'standard';
-      /* v1.4 B2 选球员：opts.roster = {me:id, ai:id|'random'} */
+      /* v1.4 B2 选球员：opts.roster = {me:id, ai:id|'random'}
+       * v1.5 C4：默认对位 mj vs king；'random' 只在非隐藏卡里抽 */
       var ro = opts.roster || {};
-      var cardMe = rosterById(ro.me || 'ace');
-      var cardAI = (ro.ai === 'random' || !ro.ai)
-        ? ROSTER[Math.floor(Math.random() * ROSTER.length)]
-        : rosterById(ro.ai);
+      var cardMe = rosterById(ro.me || 'mj');
+      var cardAI = (ro.ai === 'random')
+        ? randomVisibleCard()
+        : rosterById(ro.ai || 'king');
       try { applyRoster(0, cardMe); applyRoster(1, cardAI); } catch (eR) { console.error('[game] roster', eR); }
       G.brain = null;
       try { if (BB.AI && BB.AI.create) G.brain = BB.AI.create(G.difficulty); } catch (e) { console.error('[game] AI.create', e); }
