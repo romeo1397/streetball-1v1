@@ -17337,6 +17337,27 @@ window.CANNON=module.exports;})();
   };
 })();
 
+/* ============ v1.8.1 腿部通道净化（制作人热修复） ============
+ * 根因：CMU 重定向的腿部 ry/rz 分量存在轴系残差，导致所有动捕烘焙动作
+ * 双腿 100% 帧交叉（一动方向键就打结）。步态主分量本就在 rx（前后摆），
+ * 腿部清零 ry/rz 后实测 8 个烘焙 clip 全部零交叉、步距回归 0.2m 站距；
+ * 上身（躯干/手臂/头）保留全部动捕细节不受影响。 */
+(function () {
+  var BB = window.BB; if (!BB || !BB.CLIPS) return;
+  var LEGS = ['hipL', 'hipR', 'kneeL', 'kneeR', 'ankleL', 'ankleR'];
+  var list = (BB.MOCAP_BAKED || []).slice();
+  if (list.indexOf('walk') < 0 && BB.CLIPS.walk) list.push('walk');
+  list.forEach(function (n) {
+    var c = BB.CLIPS[n]; if (!c || !c.keys) return;
+    c.keys.forEach(function (k) {
+      LEGS.forEach(function (b) {
+        var v = k.pose && k.pose[b];
+        if (v) { v[1] = 0; v[2] = 0; }
+      });
+    });
+  });
+})();
+
 </script>
 <script>
 /* sound.js —— WebAudio 程序化音效合成（特效/UI/音效程序员）
